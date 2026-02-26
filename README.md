@@ -131,3 +131,7 @@ flowchart TD
     style Admin fill:#90EE90,stroke:#333,stroke-width:2px
     style UserFunc fill:#FFF8DC,stroke:#333,stroke-width:2px
     style AdminFunc fill:#F0FFF0,stroke:#333,stroke-width:2px ```
+
+---
+## 🎬 Retrospective Phase 2
+https://youtu.be/J6PpC-khWRU
