@@ -83,9 +83,9 @@
 ---
 
 ## 🎬 Requirement
-([https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=VIDEO_ID](https://www.youtube.com/watch?v=maLsAKS-xKs))
-## 🎬 Retrospective
-(https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=VIDEO_ID)
+https://youtu.be/maLsAKS-xKs?si=WBZ5jlsBjz7GI7Ur
+## 🎬 Retrospective Phase 1
+https://youtu.be/rXqtMDq-kn4?si=qlisBnhhiUN0j_1h
 
 ---
 ## 🎬 Retrospective Phase 2
