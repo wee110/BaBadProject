@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Room Booking - Dashboard</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .room { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .room h3 { margin: 0 0 10px 0; }
+        button, .btn { background: #007bff; color: white; padding: 8px 15px; border: none; text-decoration: none; display: inline-block; margin: 5px; cursor: pointer; }
+        .btn-success { background: #28a745; }
+        .bookings { margin-top: 30px; }
+        .booking { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 3px; }
+        .booking.pending { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .booking.approved { background: #d4edda; border-left: 4px solid #28a745; }
+        .booking-actions { margin-top: 10px; }
+        .btn-approve { background: #28a745; }
+        .btn-remove { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Room Booking Dashboard</h1>
+        <div>
+            <a href="/search" class="btn">Search Rooms</a>
+            <a href="/calendar" class="btn">Calendar View</a>
+            Welcome, <%= user.username %> (<%= user.role %>) | 
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+
+    <% if (user.role === 'admin') { %>
+        <a href="/rooms/add" class="btn btn-success">Add New Room</a>
+    <% } %>
+
+    <h2>Available Rooms</h2>
+    <% rooms.forEach(room => { %>
+        <div class="room">
+            <h3><%= room.name %></h3>
+            <p>Capacity: <%= room.capacity %> people</p>
+            <a href="/book/<%= room.id %>" class="btn">Book This Room</a>
+        </div>
+    <% }) %>
+
+    <div class="bookings">
+        <h2>Current Bookings</h2>
+        <% if (bookings.length === 0) { %>
+            <p>No bookings yet.</p>
+        <% } else { %>
+            <% bookings.forEach(booking => { %>
+                <% const room = rooms.find(r => r.id === booking.roomId) %>
+                <% const bookingUser = { 1: 'admin', 2: 'user', 3: 'john' }[booking.userId] || 'unknown' %>
+                <div class="booking <%= booking.status %>">
+                    <strong><%= room ? room.name : 'Unknown Room' %></strong> - 
+                    <%= booking.date %> from <%= booking.startTime %> to <%= booking.endTime %>
+                    <br><small>Booked by: <%= bookingUser %> | Status: <%= booking.status %></small>
+                    
+                    <div class="booking-actions">
+                        <% if (user.role === 'admin') { %>
+                            <% if (booking.status === 'pending') { %>
+                                <form method="POST" action="/bookings/<%= booking.id %>/approve" style="display: inline;">
+                                    <button type="submit" class="btn btn-approve">Approve</button>
+                                </form>
+                            <% } %>
+                            <form method="POST" action="/bookings/<%= booking.id %>/remove" style="display: inline;">
+                                <button type="submit" class="btn btn-remove">Remove</button>
+                            </form>
+                        <% } else if (booking.userId === user.id) { %>
+                            <form method="POST" action="/bookings/<%= booking.id %>/remove" style="display: inline;">
+                                <button type="submit" class="btn btn-remove">Cancel My Booking</button>
+                            </form>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+</body>
+</html>

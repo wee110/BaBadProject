@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Room Booking Calendar</title>
+    <style>
+        body { font-family: Arial; max-width: 1000px; margin: 20px auto; padding: 20px; }
+        .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #ddd; }
+        .day { background: white; padding: 10px; min-height: 100px; border: 1px solid #eee; }
+        .day-header { background: #f8f9fa; font-weight: bold; text-align: center; padding: 10px; }
+        .booking { background: #007bff; color: white; padding: 2px 5px; margin: 2px 0; font-size: 12px; border-radius: 3px; }
+        .booking.pending { background: #ffc107; color: black; }
+        .booking.approved { background: #28a745; }
+        .booking-actions { margin-top: 5px; }
+        .btn-small { padding: 2px 5px; font-size: 10px; margin: 1px; }
+        .today { background: #fff3cd; }
+        .other-month { color: #ccc; }
+        .btn { background: #007bff; color: white; padding: 8px 15px; border: none; text-decoration: none; display: inline-block; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h2>Room Booking Calendar</h2>
+    <a href="/dashboard" class="btn">Back to Dashboard</a>
+    
+    <div style="margin: 20px 0;">
+        <h3>Current Month View</h3>
+    </div>
+
+    <div class="calendar">
+        <div class="day-header">Sun</div>
+        <div class="day-header">Mon</div>
+        <div class="day-header">Tue</div>
+        <div class="day-header">Wed</div>
+        <div class="day-header">Thu</div>
+        <div class="day-header">Fri</div>
+        <div class="day-header">Sat</div>
+        
+        <%
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            for (let i = 0; i < 42; i++) {
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const dayBookings = bookings.filter(b => b.date === dateStr);
+                const isToday = currentDate.toDateString() === today.toDateString();
+                const isCurrentMonth = currentDate.getMonth() === month;
+        %>
+            <div class="day <%= isToday ? 'today' : '' %> <%= !isCurrentMonth ? 'other-month' : '' %>">
+                <div><%= currentDate.getDate() %></div>
+                <% dayBookings.forEach(booking => { %>
+                    <% const room = rooms.find(r => r.id === booking.roomId) %>
+                    <% const bookingUser = { 1: 'admin', 2: 'user', 3: 'john' }[booking.userId] || 'unknown' %>
+                    <div class="booking <%= booking.status %>">
+                        <%= room ? room.name : 'Room' %><br>
+                        <%= booking.startTime %>-<%= booking.endTime %>
+                        <div class="booking-actions">
+                            <% if (user.role === 'admin') { %>
+                                <% if (booking.status === 'pending') { %>
+                                    <form method="POST" action="/bookings/<%= booking.id %>/approve" style="display: inline;">
+                                        <button type="submit" class="btn-small" style="background: #28a745; color: white;">✓</button>
+                                    </form>
+                                <% } %>
+                                <form method="POST" action="/bookings/<%= booking.id %>/remove" style="display: inline;">
+                                    <button type="submit" class="btn-small" style="background: #dc3545; color: white;">✗</button>
+                                </form>
+                            <% } else if (booking.userId === user.id) { %>
+                                <form method="POST" action="/bookings/<%= booking.id %>/remove" style="display: inline;">
+                                    <button type="submit" class="btn-small" style="background: #dc3545; color: white;">✗</button>
+                                </form>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <h3>All Bookings</h3>
+        <% if (bookings.length === 0) { %>
+            <p>No bookings scheduled.</p>
+        <% } else { %>
+            <% bookings.forEach(booking => { %>
+                <% const room = rooms.find(r => r.id === booking.roomId) %>
+                <% const bookingUser = { 1: 'admin', 2: 'user', 3: 'john' }[booking.userId] || 'unknown' %>
+                <div style="padding: 10px; margin: 5px 0; border-radius: 5px;" class="<%= booking.status === 'pending' ? 'pending' : 'approved' %>">
+                    <strong><%= room ? room.name : 'Unknown Room' %></strong> - 
+                    <%= booking.date %> from <%= booking.startTime %> to <%= booking.endTime %>
+                    <br><small>Booked by: <%= bookingUser %> | Status: <%= booking.status %></small>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+</body>
+</html>

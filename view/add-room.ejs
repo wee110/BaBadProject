@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add New Room</title>
+    <style>
+        body { font-family: Arial; max-width: 500px; margin: 50px auto; padding: 20px; }
+        .form-group { margin: 15px 0; }
+        input { width: 100%; padding: 8px; margin: 5px 0; }
+        button { background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px; }
+        .btn-secondary { background: #6c757d; }
+    </style>
+</head>
+<body>
+    <h2>Add New Room</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Room Name:</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-group">
+            <label>Capacity:</label>
+            <input type="number" name="capacity" min="1" required>
+        </div>
+        <button type="submit">Add Room</button>
+        <a href="/dashboard" class="btn-secondary" style="text-decoration: none; padding: 10px 20px; color: white;">Cancel</a>
+    </form>
+</body>
+</html>

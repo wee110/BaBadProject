@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Available Rooms</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .form-group { margin: 15px 0; }
+        input { padding: 8px; margin: 5px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px; }
+        .btn-secondary { background: #6c757d; }
+        .search-form { background: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+        .room-result { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .room-result.available { border-left: 4px solid #28a745; }
+        .room-result.pending { border-left: 4px solid #ffc107; background: #fff3cd; }
+        .room-result.unavailable { border-left: 4px solid #dc3545; background: #f8d7da; }
+        .no-results { color: #666; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h2>Search Available Rooms</h2>
+    
+    <div class="search-form">
+        <form method="POST">
+            <div class="form-group">
+                <label>Date:</label>
+                <input type="date" name="date" required min="<%= new Date().toISOString().split('T')[0] %>" 
+                       value="<%= searchData ? searchData.date : '' %>">
+                
+                <label>Start Time:</label>
+                <input type="time" name="startTime" required 
+                       value="<%= searchData ? searchData.startTime : '' %>">
+                
+                <label>End Time:</label>
+                <input type="time" name="endTime" required 
+                       value="<%= searchData ? searchData.endTime : '' %>">
+                
+                <button type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <% if (results !== null) { %>
+        <h3>Search Results</h3>
+        <% if (results.length === 0) { %>
+            <p class="no-results">No rooms available for the selected time period.</p>
+        <% } else { %>
+            <% results.forEach(room => { %>
+                <div class="room-result <%= room.availability %>">
+                    <h4><%= room.name %></h4>
+                    <p>Capacity: <%= room.capacity %> people</p>
+                    <p>Status: 
+                        <% if (room.availability === 'available') { %>
+                            <span style="color: #28a745;">Available</span>
+                        <% } else if (room.availability === 'pending') { %>
+                            <span style="color: #ffc107;">Pending Approval</span>
+                        <% } else { %>
+                            <span style="color: #dc3545;">Unavailable</span>
+                        <% } %>
+                    </p>
+                    <% if (room.availability !== 'unavailable') { %>
+                        <a href="/book/<%= room.id %>" class="btn">Book This Room</a>
+                    <% } %>
+                </div>
+            <% }) %>
+        <% } %>
+    <% } %>
+
+    <a href="/dashboard" class="btn-secondary" style="text-decoration: none; padding: 10px 20px; color: white;">Back to Dashboard</a>
+</body>
+</html>
