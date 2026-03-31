@@ -73,7 +73,7 @@
             </div>
 
             <!-- Error Message -->
-            <% if (error) { %>
+            <% if (typeof error !== 'undefined' && error) { %>
                 <div class="alert alert-error">⚠️ <%= error %></div>
             <% } %>
 
@@ -88,7 +88,7 @@
                         <div class="form-group">
                             <label class="form-label">📅 วันที่</label>
                             <input type="date" name="date" class="form-control" required
-                                   min="<%= new Date().toISOString().split('T')[0] %>"
+                                   min="<%= new Date(new Date().getTime() + 7 * 60 * 60 * 1000).toISOString().split('T')[0] %>"
                                    id="booking-date"
                                    onchange="updateSummary()">
                         </div>
@@ -147,7 +147,7 @@
     </div>
 
     <script>
-        const pricePerHour = <%= court.pricePerHour %>;
+        const pricePerHour = <%= court.pricePerHour || 0 %>;
 
         function updateSummary() {
             const date = document.getElementById('booking-date').value;
@@ -165,13 +165,16 @@
                 const endMinutes = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
                 const durationMinutes = endMinutes - startMinutes;
 
-                if (durationMinutes > 0) {
+                if (durationMinutes >= 60) {
                     const hours = (durationMinutes / 60).toFixed(1);
                     document.getElementById('summary-duration').textContent = hours + ' ชั่วโมง';
                     const total = Math.ceil(durationMinutes / 60) * pricePerHour;
                     document.getElementById('summary-total').textContent = '฿' + total.toLocaleString();
+                } else if (durationMinutes > 0) {
+                    document.getElementById('summary-duration').textContent = 'ขั้นต่ำ 1 ชั่วโมง';
+                    document.getElementById('summary-total').textContent = '-';
                 } else {
-                    document.getElementById('summary-duration').textContent = 'ไม่ถูกต้อง';
+                    document.getElementById('summary-duration').textContent = 'เวลาไม่ถูกต้อง';
                     document.getElementById('summary-total').textContent = '-';
                 }
             } else {
