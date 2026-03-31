@@ -1,6 +1,6 @@
 // ============================================
 // 🏸 BaBadminton — Main Application
-// Express + Passport + Google OAuth
+// Express + Passport + Google OAuth + MySQL
 // ============================================
 
 require('dotenv').config();
@@ -11,6 +11,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const path = require('path');
 const data = require('./model/data');
+const { initDatabase } = require('./model/database');
 
 const authController = require('./controller/authController');
 const roomController = require('./controller/roomController');
@@ -43,30 +44,40 @@ passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser((id, done) => {
-  const user = data.findUserById(id);
-  done(null, user);
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await data.findUserById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
 });
 
 // Google OAuth Strategy - only set up if credentials are configured
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const hasGoogleAuth = googleClientId && googleClientId !== 'placeholder' &&
-                      googleClientSecret && googleClientSecret !== 'placeholder';
+                      googleClientId !== 'your-google-client-id-here' &&
+                      googleClientSecret && googleClientSecret !== 'placeholder' &&
+                      googleClientSecret !== 'your-google-client-secret-here';
 
 if (hasGoogleAuth) {
   passport.use(new GoogleStrategy({
     clientID: googleClientId,
     clientSecret: googleClientSecret,
     callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:3000/auth/google/callback'
-  }, (accessToken, refreshToken, profile, done) => {
-    const user = data.findOrCreateGoogleUser(profile);
-    return done(null, user);
+  }, async (accessToken, refreshToken, profile, done) => {
+    try {
+      const user = await data.findOrCreateGoogleUser(profile);
+      return done(null, user);
+    } catch (err) {
+      return done(err, null);
+    }
   }));
-  console.log('✅ Google OAuth configured');
+  console.log('  ✅ Google OAuth configured');
 } else {
-  console.log('⚠️  Google OAuth not configured - using admin login only');
-  console.log('   Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to enable');
+  console.log('  ⚠️  Google OAuth not configured - using username/password login');
+  console.log('     Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env to enable');
 }
 
 // Make googleAuth status available to views
@@ -115,13 +126,37 @@ app.post('/book/:roomId', authController.requireAuth, bookingController.createBo
 app.post('/bookings/:id/approve', authController.requireAuth, authController.requireAdmin, bookingController.approveBooking);
 app.post('/bookings/:id/remove', authController.requireAuth, bookingController.removeBooking);
 
-// ── Start Server ──
-app.listen(PORT, () => {
+// ── Initialize DB & Start Server ──
+async function startServer() {
   console.log('');
   console.log('🏸 ═══════════════════════════════════════');
   console.log('   BaBadminton Court Booking System');
-  console.log(`   Running on http://localhost:${PORT}`);
-  console.log('   Admin login: admin / admin123');
-  console.log('🏸 ═══════════════════════════════════════');
-  console.log('');
-});
+  console.log('   Initializing...');
+
+  const dbReady = await initDatabase();
+
+  if (!dbReady) {
+    console.log('');
+    console.log('  ❌ Cannot connect to MySQL database!');
+    console.log('  📋 Please make sure:');
+    console.log('     1. MySQL is running');
+    console.log('     2. Database "babadminton" exists (or run schema.sql)');
+    console.log('     3. Check DB_HOST, DB_USER, DB_PASSWORD in .env');
+    console.log('');
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log('');
+    console.log(`  🌐 Running on http://localhost:${PORT}`);
+    console.log('');
+    console.log('  📌 Login accounts:');
+    console.log('     Admin : admin / admin123');
+    console.log('     User1 : user1 / 1234');
+    console.log('     User2 : user2 / 1234');
+    console.log('🏸 ═══════════════════════════════════════');
+    console.log('');
+  });
+}
+
+startServer();

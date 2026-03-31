@@ -1,243 +1,289 @@
 // ============================================
-// 🏸 BaBadminton — Data Model
-// In-memory data store for courts & bookings
+// 🏸 BaBadminton — Data Model (MySQL)
+// Async data layer using mysql2/promise
 // ============================================
 
-const users = [
-  { id: 1, username: 'admin', password: 'admin123', role: 'admin', email: 'admin@babadminton.com', avatar: null }
-];
+const { pool } = require('./database');
 
-let nextUserId = 2;
+// ── Helper: Parse facilities string to array ──
+function parseFacilities(facilitiesStr) {
+  if (!facilitiesStr) return [];
+  return facilitiesStr.split(',').map(f => f.trim()).filter(f => f);
+}
 
-let courts = [
-  {
-    id: 1,
-    name: 'สนาม A',
-    courtType: 'double',
-    surface: 'synthetic',
-    pricePerHour: 200,
-    facilities: ['💡 ไฟส่องสว่าง', '❄️ แอร์', '🅿️ ที่จอดรถ'],
-    description: 'สนามแบดมินตันคู่ พื้นสังเคราะห์คุณภาพสูง พร้อมระบบแอร์'
-  },
-  {
-    id: 2,
-    name: 'สนาม B',
-    courtType: 'double',
-    surface: 'wooden',
-    pricePerHour: 250,
-    facilities: ['💡 ไฟส่องสว่าง', '❄️ แอร์', '🚿 ห้องอาบน้ำ', '🅿️ ที่จอดรถ'],
-    description: 'สนามพื้นไม้ระดับแข่งขัน เหมาะสำหรับนักกีฬาที่ต้องการคุณภาพสูงสุด'
-  },
-  {
-    id: 3,
-    name: 'สนาม C',
-    courtType: 'single',
-    surface: 'synthetic',
-    pricePerHour: 150,
-    facilities: ['💡 ไฟส่องสว่าง', '🅿️ ที่จอดรถ'],
-    description: 'สนามเดี่ยวสำหรับฝึกซ้อม ราคาประหยัด'
-  },
-  {
-    id: 4,
-    name: 'สนาม D',
-    courtType: 'double',
-    surface: 'synthetic',
-    pricePerHour: 200,
-    facilities: ['💡 ไฟส่องสว่าง', '❄️ แอร์', '🚿 ห้องอาบน้ำ'],
-    description: 'สนามคู่มาตรฐาน พื้นสังเคราะห์กันลื่น'
-  },
-  {
-    id: 5,
-    name: 'สนาม E (Premium)',
-    courtType: 'double',
-    surface: 'wooden',
-    pricePerHour: 350,
-    facilities: ['💡 ไฟส่องสว่าง', '❄️ แอร์', '🚿 ห้องอาบน้ำ', '🅿️ ที่จอดรถ', '📺 จอ Scoreboard'],
-    description: 'สนาม Premium พื้นไม้เกรด A พร้อม Scoreboard ดิจิทัล'
-  },
-  {
-    id: 6,
-    name: 'สนาม F',
-    courtType: 'single',
-    surface: 'cement',
-    pricePerHour: 100,
-    facilities: ['💡 ไฟส่องสว่าง'],
-    description: 'สนามเดี่ยวกลางแจ้ง ราคาถูกสุด เหมาะสำหรับเล่นสบายๆ'
-  }
-];
+// ── Helper: Map DB row to court object ──
+function mapCourt(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    courtType: row.court_type,
+    surface: row.surface,
+    pricePerHour: row.price_per_hour,
+    facilities: parseFacilities(row.facilities),
+    description: row.description
+  };
+}
 
-let bookings = [];
-let nextCourtId = 7;
-let nextBookingId = 1;
+// ── Helper: Map DB row to booking object ──
+function mapBooking(row) {
+  return {
+    id: row.id,
+    courtId: row.court_id,
+    date: row.booking_date instanceof Date
+      ? row.booking_date.toISOString().split('T')[0]
+      : String(row.booking_date).split('T')[0],
+    startTime: row.start_time,
+    endTime: row.end_time,
+    userId: row.user_id,
+    status: row.status,
+    createdAt: row.created_at
+  };
+}
 
 module.exports = {
-  // ── User Management ──
-  findUser: (username, password) => {
-    return users.find(u => u.username === username && u.password === password);
+  // ══════════════════════════════════════
+  // User Management
+  // ══════════════════════════════════════
+
+  findUser: async (username, password) => {
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE username = ? AND password = ?',
+      [username, password]
+    );
+    return rows[0] || null;
   },
 
-  findOrCreateGoogleUser: (profile) => {
-    let user = users.find(u => u.email === profile.emails[0].value && u.role !== 'admin');
-    if (!user) {
-      user = {
-        id: nextUserId++,
-        username: profile.displayName,
-        password: null,
-        role: 'user',
-        email: profile.emails[0].value,
-        avatar: profile.photos && profile.photos[0] ? profile.photos[0].value : null
-      };
-      users.push(user);
-    }
-    return user;
-  },
+  findOrCreateGoogleUser: async (profile) => {
+    const email = profile.emails[0].value;
+    const [rows] = await pool.query(
+      'SELECT * FROM users WHERE email = ? AND role != ?',
+      [email, 'admin']
+    );
 
-  findUserById: (id) => {
-    return users.find(u => u.id === id);
-  },
+    if (rows.length > 0) return rows[0];
 
-  getUsers: () => users,
+    const avatar = profile.photos && profile.photos[0] ? profile.photos[0].value : null;
+    const [result] = await pool.query(
+      'INSERT INTO users (username, password, role, email, avatar) VALUES (?, NULL, ?, ?, ?)',
+      [profile.displayName, 'user', email, avatar]
+    );
 
-  // ── Court Management ──
-  getCourts: () => courts,
-
-  getCourtById: (id) => {
-    return courts.find(c => c.id === parseInt(id));
-  },
-
-  addCourt: (courtData) => {
-    const court = {
-      id: nextCourtId++,
-      name: courtData.name,
-      courtType: courtData.courtType || 'double',
-      surface: courtData.surface || 'synthetic',
-      pricePerHour: parseInt(courtData.pricePerHour) || 200,
-      facilities: courtData.facilities || [],
-      description: courtData.description || ''
+    return {
+      id: result.insertId,
+      username: profile.displayName,
+      password: null,
+      role: 'user',
+      email,
+      avatar
     };
-    courts.push(court);
-    return court;
   },
 
-  // ── Booking Management ──
-  getBookings: () => bookings,
-
-  getBookingById: (id) => {
-    return bookings.find(b => b.id === parseInt(id));
+  findUserById: async (id) => {
+    const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
+    return rows[0] || null;
   },
 
-  getUserBookings: (userId) => {
-    return bookings.filter(b => b.userId === userId);
+  getUsers: async () => {
+    const [rows] = await pool.query('SELECT * FROM users');
+    return rows;
   },
 
-  addBooking: (courtId, date, startTime, endTime, userId) => {
-    const booking = {
-      id: nextBookingId++,
+  // ══════════════════════════════════════
+  // Court Management
+  // ══════════════════════════════════════
+
+  getCourts: async () => {
+    const [rows] = await pool.query('SELECT * FROM courts ORDER BY id');
+    return rows.map(mapCourt);
+  },
+
+  getCourtById: async (id) => {
+    const [rows] = await pool.query('SELECT * FROM courts WHERE id = ?', [parseInt(id)]);
+    return rows[0] ? mapCourt(rows[0]) : null;
+  },
+
+  addCourt: async (courtData) => {
+    const facilities = Array.isArray(courtData.facilities)
+      ? courtData.facilities.join(',')
+      : (courtData.facilities || '');
+
+    const [result] = await pool.query(
+      'INSERT INTO courts (name, court_type, surface, price_per_hour, facilities, description) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        courtData.name,
+        courtData.courtType || 'double',
+        courtData.surface || 'synthetic',
+        parseInt(courtData.pricePerHour) || 200,
+        facilities,
+        courtData.description || ''
+      ]
+    );
+
+    return { id: result.insertId, ...courtData };
+  },
+
+  // ══════════════════════════════════════
+  // Booking Management
+  // ══════════════════════════════════════
+
+  getBookings: async () => {
+    const [rows] = await pool.query('SELECT * FROM bookings ORDER BY booking_date DESC, start_time');
+    return rows.map(mapBooking);
+  },
+
+  getBookingById: async (id) => {
+    const [rows] = await pool.query('SELECT * FROM bookings WHERE id = ?', [parseInt(id)]);
+    return rows[0] ? mapBooking(rows[0]) : null;
+  },
+
+  getUserBookings: async (userId) => {
+    const [rows] = await pool.query(
+      'SELECT * FROM bookings WHERE user_id = ? ORDER BY booking_date DESC',
+      [userId]
+    );
+    return rows.map(mapBooking);
+  },
+
+  addBooking: async (courtId, date, startTime, endTime, userId) => {
+    const [result] = await pool.query(
+      'INSERT INTO bookings (court_id, booking_date, start_time, end_time, user_id, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [parseInt(courtId), date, startTime, endTime, userId, 'pending']
+    );
+    return {
+      id: result.insertId,
       courtId: parseInt(courtId),
       date,
       startTime,
       endTime,
       userId,
-      status: 'pending',
-      createdAt: new Date().toISOString()
+      status: 'pending'
     };
-    bookings.push(booking);
-    return booking;
   },
 
-  // ── Overbooking Prevention ──
-  // Check if there is ANY booking (pending or approved) that conflicts
-  hasConflictingBooking: (courtId, date, startTime, endTime, excludeBookingId) => {
-    return bookings.some(b =>
-      b.courtId === parseInt(courtId) &&
-      b.date === date &&
-      (b.status === 'approved' || b.status === 'pending') &&
-      (excludeBookingId ? b.id !== parseInt(excludeBookingId) : true) &&
-      ((startTime >= b.startTime && startTime < b.endTime) ||
-       (endTime > b.startTime && endTime <= b.endTime) ||
-       (startTime <= b.startTime && endTime >= b.endTime))
-    );
+  // ══════════════════════════════════════
+  // Overbooking Prevention
+  // ══════════════════════════════════════
+
+  hasConflictingBooking: async (courtId, date, startTime, endTime, excludeBookingId) => {
+    let query = `
+      SELECT COUNT(*) as count FROM bookings
+      WHERE court_id = ? AND booking_date = ?
+      AND status IN ('pending', 'approved')
+      AND (
+        (start_time >= ? AND start_time < ?) OR
+        (end_time > ? AND end_time <= ?) OR
+        (start_time <= ? AND end_time >= ?)
+      )
+    `;
+    const params = [parseInt(courtId), date, startTime, endTime, startTime, endTime, startTime, endTime];
+
+    if (excludeBookingId) {
+      query += ' AND id != ?';
+      params.push(parseInt(excludeBookingId));
+    }
+
+    const [rows] = await pool.query(query, params);
+    return rows[0].count > 0;
   },
 
-  // Legacy compatibility
-  hasApprovedBooking: (courtId, date, startTime, endTime) => {
-    return bookings.some(b =>
-      b.courtId === parseInt(courtId) &&
-      b.date === date &&
-      (b.status === 'approved' || b.status === 'pending') &&
-      ((startTime >= b.startTime && startTime < b.endTime) ||
-       (endTime > b.startTime && endTime <= b.endTime) ||
-       (startTime <= b.startTime && endTime >= b.endTime))
-    );
+  hasApprovedBooking: async (courtId, date, startTime, endTime) => {
+    const [rows] = await pool.query(`
+      SELECT COUNT(*) as count FROM bookings
+      WHERE court_id = ? AND booking_date = ?
+      AND status IN ('pending', 'approved')
+      AND (
+        (start_time >= ? AND start_time < ?) OR
+        (end_time > ? AND end_time <= ?) OR
+        (start_time <= ? AND end_time >= ?)
+      )
+    `, [parseInt(courtId), date, startTime, endTime, startTime, endTime, startTime, endTime]);
+    return rows[0].count > 0;
   },
 
-  isCourtAvailable: (courtId, date, startTime, endTime) => {
-    return !bookings.some(b =>
-      b.courtId === parseInt(courtId) &&
-      b.date === date &&
-      (b.status === 'approved' || b.status === 'pending') &&
-      ((startTime >= b.startTime && startTime < b.endTime) ||
-       (endTime > b.startTime && endTime <= b.endTime) ||
-       (startTime <= b.startTime && endTime >= b.endTime))
-    );
+  isCourtAvailable: async (courtId, date, startTime, endTime) => {
+    const [rows] = await pool.query(`
+      SELECT COUNT(*) as count FROM bookings
+      WHERE court_id = ? AND booking_date = ?
+      AND status IN ('pending', 'approved')
+      AND (
+        (start_time >= ? AND start_time < ?) OR
+        (end_time > ? AND end_time <= ?) OR
+        (start_time <= ? AND end_time >= ?)
+      )
+    `, [parseInt(courtId), date, startTime, endTime, startTime, endTime, startTime, endTime]);
+    return rows[0].count === 0;
   },
 
-  // ── Search with Filters ──
-  searchAvailableCourts: (date, startTime, endTime, courtType, surface) => {
-    let filteredCourts = courts;
+  // ══════════════════════════════════════
+  // Search with Filters
+  // ══════════════════════════════════════
+
+  searchAvailableCourts: async (date, startTime, endTime, courtType, surface) => {
+    // Get filtered courts
+    let courtQuery = 'SELECT * FROM courts WHERE 1=1';
+    const courtParams = [];
 
     if (courtType && courtType !== 'all') {
-      filteredCourts = filteredCourts.filter(c => c.courtType === courtType);
+      courtQuery += ' AND court_type = ?';
+      courtParams.push(courtType);
     }
     if (surface && surface !== 'all') {
-      filteredCourts = filteredCourts.filter(c => c.surface === surface);
+      courtQuery += ' AND surface = ?';
+      courtParams.push(surface);
     }
 
-    return filteredCourts.map(court => {
-      const hasConflict = bookings.some(b =>
-        b.courtId === court.id &&
-        b.date === date &&
-        (b.status === 'approved' || b.status === 'pending') &&
-        ((startTime >= b.startTime && startTime < b.endTime) ||
-         (endTime > b.startTime && endTime <= b.endTime) ||
-         (startTime <= b.startTime && endTime >= b.endTime))
-      );
+    const [courts] = await pool.query(courtQuery, courtParams);
 
-      const hasPendingOnly = !hasConflict ? false : bookings.some(b =>
-        b.courtId === court.id &&
-        b.date === date &&
-        b.status === 'pending' &&
-        ((startTime >= b.startTime && startTime < b.endTime) ||
-         (endTime > b.startTime && endTime <= b.endTime) ||
-         (startTime <= b.startTime && endTime >= b.endTime))
-      ) && !bookings.some(b =>
-        b.courtId === court.id &&
-        b.date === date &&
-        b.status === 'approved' &&
-        ((startTime >= b.startTime && startTime < b.endTime) ||
-         (endTime > b.startTime && endTime <= b.endTime) ||
-         (startTime <= b.startTime && endTime >= b.endTime))
-      );
+    // For each court, check availability
+    const results = [];
+    for (const court of courts) {
+      // Check for any conflict
+      const [conflictRows] = await pool.query(`
+        SELECT status FROM bookings
+        WHERE court_id = ? AND booking_date = ?
+        AND status IN ('pending', 'approved')
+        AND (
+          (start_time >= ? AND start_time < ?) OR
+          (end_time > ? AND end_time <= ?) OR
+          (start_time <= ? AND end_time >= ?)
+        )
+      `, [court.id, date, startTime, endTime, startTime, endTime, startTime, endTime]);
 
-      return {
-        ...court,
-        availability: hasConflict ? (hasPendingOnly ? 'pending' : 'unavailable') : 'available'
-      };
-    });
+      let availability = 'available';
+      if (conflictRows.length > 0) {
+        const hasApproved = conflictRows.some(r => r.status === 'approved');
+        availability = hasApproved ? 'unavailable' : 'pending';
+      }
+
+      results.push({
+        ...mapCourt(court),
+        availability
+      });
+    }
+
+    return results;
   },
 
-  approveBooking: (bookingId) => {
-    const booking = bookings.find(b => b.id === parseInt(bookingId));
-    if (booking) booking.status = 'approved';
+  // ══════════════════════════════════════
+  // Booking Actions
+  // ══════════════════════════════════════
+
+  approveBooking: async (bookingId) => {
+    await pool.query('UPDATE bookings SET status = ? WHERE id = ?', ['approved', parseInt(bookingId)]);
+    const [rows] = await pool.query('SELECT * FROM bookings WHERE id = ?', [parseInt(bookingId)]);
+    return rows[0] ? mapBooking(rows[0]) : null;
+  },
+
+  removeBooking: async (bookingId) => {
+    const [rows] = await pool.query('SELECT * FROM bookings WHERE id = ?', [parseInt(bookingId)]);
+    const booking = rows[0] ? mapBooking(rows[0]) : null;
+    await pool.query('DELETE FROM bookings WHERE id = ?', [parseInt(bookingId)]);
     return booking;
-  },
-
-  removeBooking: (bookingId) => {
-    const index = bookings.findIndex(b => b.id === parseInt(bookingId));
-    if (index > -1) return bookings.splice(index, 1)[0];
-    return null;
   },
 
   // ── Helpers ──
-  getRooms: () => courts,  // backward compat
+  getRooms: async () => {
+    const [rows] = await pool.query('SELECT * FROM courts ORDER BY id');
+    return rows.map(mapCourt);
+  }
 };

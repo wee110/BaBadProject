@@ -1,78 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-    <title>Room Booking - Dashboard</title>
-    <style>
-        body { font-family: Arial; max-width: 800px; margin: 20px auto; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .room { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
-        .room h3 { margin: 0 0 10px 0; }
-        button, .btn { background: #007bff; color: white; padding: 8px 15px; border: none; text-decoration: none; display: inline-block; margin: 5px; cursor: pointer; }
-        .btn-success { background: #28a745; }
-        .bookings { margin-top: 30px; }
-        .booking { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 3px; }
-        .booking.pending { background: #fff3cd; border-left: 4px solid #ffc107; }
-        .booking.approved { background: #d4edda; border-left: 4px solid #28a745; }
-        .booking-actions { margin-top: 10px; }
-        .btn-approve { background: #28a745; }
-        .btn-remove { background: #dc3545; }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BaBadminton Dashboard - จัดการสนามแบดมินตันและการจอง">
+    <title>BaBadminton — Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="header">
-        <h1>Room Booking Dashboard</h1>
-        <div>
-            <a href="/search" class="btn">Search Rooms</a>
-            <a href="/calendar" class="btn">Calendar View</a>
-            Welcome, <%= user.username %> (<%= user.role %>) | 
-            <a href="/logout">Logout</a>
-        </div>
-    </div>
+    <div class="bg-decoration"></div>
 
-    <% if (user.role === 'admin') { %>
-        <a href="/rooms/add" class="btn btn-success">Add New Room</a>
-    <% } %>
-
-    <h2>Available Rooms</h2>
-    <% rooms.forEach(room => { %>
-        <div class="room">
-            <h3><%= room.name %></h3>
-            <p>Capacity: <%= room.capacity %> people</p>
-            <a href="/book/<%= room.id %>" class="btn">Book This Room</a>
-        </div>
-    <% }) %>
-
-    <div class="bookings">
-        <h2>Current Bookings</h2>
-        <% if (bookings.length === 0) { %>
-            <p>No bookings yet.</p>
-        <% } else { %>
-            <% bookings.forEach(booking => { %>
-                <% const room = rooms.find(r => r.id === booking.roomId) %>
-                <% const bookingUser = { 1: 'admin', 2: 'user', 3: 'john' }[booking.userId] || 'unknown' %>
-                <div class="booking <%= booking.status %>">
-                    <strong><%= room ? room.name : 'Unknown Room' %></strong> - 
-                    <%= booking.date %> from <%= booking.startTime %> to <%= booking.endTime %>
-                    <br><small>Booked by: <%= bookingUser %> | Status: <%= booking.status %></small>
-                    
-                    <div class="booking-actions">
-                        <% if (user.role === 'admin') { %>
-                            <% if (booking.status === 'pending') { %>
-                                <form method="POST" action="/bookings/<%= booking.id %>/approve" style="display: inline;">
-                                    <button type="submit" class="btn btn-approve">Approve</button>
-                                </form>
-                            <% } %>
-                            <form method="POST" action="/bookings/<%= booking.id %>/remove" style="display: inline;">
-                                <button type="submit" class="btn btn-remove">Remove</button>
-                            </form>
-                        <% } else if (booking.userId === user.id) { %>
-                            <form method="POST" action="/bookings/<%= booking.id %>/remove" style="display: inline;">
-                                <button type="submit" class="btn btn-remove">Cancel My Booking</button>
-                            </form>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="/dashboard" class="navbar-brand">
+                <span class="icon">🏸</span>
+                <span>BaBadminton</span>
+            </a>
+            <div class="navbar-nav">
+                <a href="/dashboard" class="nav-link active" id="nav-dashboard">📊 Dashboard</a>
+                <a href="/search" class="nav-link" id="nav-search">🔍 ค้นหาสนาม</a>
+                <a href="/calendar" class="nav-link" id="nav-calendar">📅 ปฏิทิน</a>
+                <% if (user.role === 'admin') { %>
+                    <a href="/rooms/add" class="nav-link" id="nav-add-court">➕ เพิ่มสนาม</a>
+                <% } %>
+                <div class="nav-user">
+                    <div class="avatar">
+                        <% if (user.avatar) { %>
+                            <img src="<%= user.avatar %>" alt="<%= user.username %>">
+                        <% } else { %>
+                            <%= user.username.charAt(0).toUpperCase() %>
                         <% } %>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name"><%= user.username %></span>
+                        <span class="user-role"><%= user.role %></span>
+                    </div>
+                </div>
+                <a href="/logout" class="nav-link" id="nav-logout">🚪 ออก</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">ยินดีต้อนรับ, <%= user.username %>! จัดการสนามและการจองของคุณ</p>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card glass-card">
+                <div class="stat-value"><%= courts.length %></div>
+                <div class="stat-label">สนามทั้งหมด</div>
+            </div>
+            <div class="stat-card glass-card">
+                <div class="stat-value"><%= bookings.length %></div>
+                <div class="stat-label">การจองทั้งหมด</div>
+            </div>
+            <div class="stat-card glass-card">
+                <div class="stat-value"><%= bookings.filter(b => b.status === 'pending').length %></div>
+                <div class="stat-label">รอการอนุมัติ</div>
+            </div>
+            <div class="stat-card glass-card">
+                <div class="stat-value"><%= bookings.filter(b => b.status === 'approved').length %></div>
+                <div class="stat-label">อนุมัติแล้ว</div>
+            </div>
+        </div>
+
+        <!-- Courts Section -->
+        <div class="section-header">
+            <h2 class="section-title">🏸 สนามแบดมินตัน</h2>
+            <% if (user.role === 'admin') { %>
+                <a href="/rooms/add" class="btn btn-success" id="btn-add-court">➕ เพิ่มสนามใหม่</a>
+            <% } %>
+        </div>
+
+        <div class="courts-grid">
+            <% courts.forEach((court, index) => { %>
+                <div class="court-card animate-in" id="court-card-<%= court.id %>">
+                    <div class="court-card-header">
+                        <span class="court-icon">🏸</span>
+                    </div>
+                    <div class="court-card-body">
+                        <div class="court-name"><%= court.name %></div>
+                        <div class="court-meta">
+                            <span class="court-badge badge-type">
+                                <%= court.courtType === 'double' ? '👥 คู่' : '👤 เดี่ยว' %>
+                            </span>
+                            <span class="court-badge badge-surface">
+                                <% if (court.surface === 'synthetic') { %>🟢 สังเคราะห์
+                                <% } else if (court.surface === 'wooden') { %>🟤 ไม้
+                                <% } else { %>⬜ ซีเมนต์<% } %>
+                            </span>
+                        </div>
+                        <div class="court-price">
+                            ฿<%= court.pricePerHour %> <span>/ ชั่วโมง</span>
+                        </div>
+                        <% if (court.facilities && court.facilities.length > 0) { %>
+                            <div class="court-facilities">
+                                <% court.facilities.forEach(f => { %>
+                                    <span class="facility-tag"><%= f %></span>
+                                <% }) %>
+                            </div>
+                        <% } %>
+                        <a href="/book/<%= court.id %>" class="btn btn-primary" style="width: 100%;" id="btn-book-<%= court.id %>">
+                            จองสนามนี้
+                        </a>
                     </div>
                 </div>
             <% }) %>
+        </div>
+
+        <!-- Bookings Section -->
+        <div class="section-header">
+            <h2 class="section-title">📋 การจองทั้งหมด</h2>
+        </div>
+
+        <% if (bookings.length === 0) { %>
+            <div class="empty-state glass-card" style="padding: 48px;">
+                <div class="icon">📭</div>
+                <p>ยังไม่มีการจอง</p>
+            </div>
+        <% } else { %>
+            <div class="bookings-list">
+                <% bookings.forEach(booking => { %>
+                    <% const court = courts.find(c => c.id === booking.courtId) %>
+                    <% const bookingUser = users.find(u => u.id === booking.userId) %>
+                    <div class="booking-card status-<%= booking.status %>" id="booking-<%= booking.id %>">
+                        <div class="booking-info">
+                            <div class="booking-court-name">
+                                🏸 <%= court ? court.name : 'สนามที่ไม่รู้จัก' %>
+                            </div>
+                            <div class="booking-details">
+                                <span>📅 <%= booking.date %></span>
+                                <span>🕐 <%= booking.startTime %> - <%= booking.endTime %></span>
+                                <span>👤 <%= bookingUser ? bookingUser.username : 'ไม่ทราบ' %></span>
+                            </div>
+                        </div>
+                        <div class="booking-status <%= booking.status %>">
+                            <span class="status-dot <%= booking.status %>"></span>
+                            <%= booking.status === 'pending' ? 'รอการอนุมัติ' : 'อนุมัติแล้ว' %>
+                        </div>
+                        <div class="booking-actions">
+                            <% if (user.role === 'admin') { %>
+                                <% if (booking.status === 'pending') { %>
+                                    <form method="POST" action="/bookings/<%= booking.id %>/approve" class="inline-form">
+                                        <button type="submit" class="btn btn-success btn-sm" id="btn-approve-<%= booking.id %>">✓ อนุมัติ</button>
+                                    </form>
+                                <% } %>
+                                <form method="POST" action="/bookings/<%= booking.id %>/remove" class="inline-form">
+                                    <button type="submit" class="btn btn-danger btn-sm" id="btn-remove-<%= booking.id %>">✗ ลบ</button>
+                                </form>
+                            <% } else if (booking.userId === user.id) { %>
+                                <form method="POST" action="/bookings/<%= booking.id %>/remove" class="inline-form">
+                                    <button type="submit" class="btn btn-danger btn-sm" id="btn-cancel-<%= booking.id %>">ยกเลิก</button>
+                                </form>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
         <% } %>
     </div>
 </body>

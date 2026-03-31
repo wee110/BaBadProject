@@ -1,6 +1,6 @@
 // ============================================
 // 🏸 BaBadminton — Auth Controller
-// Google OAuth + Admin hardcoded login
+// Google OAuth + Admin + User login (async/MySQL)
 // ============================================
 
 const data = require('../model/data');
@@ -10,21 +10,26 @@ const showLogin = (req, res) => {
   res.render('login', { error });
 };
 
-const login = (req, res) => {
-  const { username, password } = req.body;
-  const user = data.findUser(username, password);
+const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await data.findUser(username, password);
 
-  if (user) {
-    req.session.user = {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar
-    };
-    res.redirect('/dashboard');
-  } else {
-    res.render('login', { error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
+    if (user) {
+      req.session.user = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar
+      };
+      res.redirect('/dashboard');
+    } else {
+      res.render('login', { error: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' });
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    res.render('login', { error: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' });
   }
 };
 
