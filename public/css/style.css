@@ -441,6 +441,11 @@ select.form-control {
   padding-right: 36px;
 }
 
+select.form-control option {
+  background-color: #1a2035;
+  color: var(--text-primary);
+}
+
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

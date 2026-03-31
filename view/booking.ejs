@@ -81,7 +81,7 @@
             <div class="glass-card" style="padding: 24px;">
                 <h3 style="font-size: 1rem; margin-bottom: 20px; color: var(--accent-green);">📅 เลือกวันและเวลา</h3>
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">
-                    ⏰ เปิดให้บริการ 06:00 - 22:00 | ขั้นต่ำ 1 ชั่วโมง
+                    ⏰ เปิดให้บริการ 06:00 AM - 10:00 PM | ขั้นต่ำ 1 ชั่วโมง | นาทีเลือกได้เฉพาะ :00 และ :30
                 </p>
                 <form method="POST" id="booking-form">
                     <div class="form-row">
@@ -93,20 +93,56 @@
                                    onchange="updateSummary()">
                         </div>
                     </div>
+                    <!-- Hidden inputs that store the actual 24h values sent to the server -->
+                    <input type="hidden" name="startTime" id="booking-start-time">
+                    <input type="hidden" name="endTime"   id="booking-end-time">
+
                     <div class="form-row">
+                        <!-- START TIME -->
                         <div class="form-group">
                             <label class="form-label">🕐 เวลาเริ่ม</label>
-                            <input type="time" name="startTime" class="form-control" required
-                                   min="06:00" max="21:00"
-                                   id="booking-start-time"
-                                   onchange="updateSummary()">
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <select id="start-hour" class="form-control" style="flex:1;" onchange="buildTime('start')">
+                                    <option value="6" selected>6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                                <select id="start-min" class="form-control" style="flex:1;" onchange="buildTime('start')">
+                                    <option value="00" selected>00</option>
+                                    <option value="30">30</option>
+                                </select>
+                                <select id="start-ampm" class="form-control" style="flex:1;" onchange="buildTime('start')">
+                                    <option value="AM" selected>AM</option>
+                                    <option value="PM">PM</option>
+                                </select>
+                            </div>
                         </div>
+                        <!-- END TIME -->
                         <div class="form-group">
                             <label class="form-label">🕐 เวลาสิ้นสุด</label>
-                            <input type="time" name="endTime" class="form-control" required
-                                   min="07:00" max="22:00"
-                                   id="booking-end-time"
-                                   onchange="updateSummary()">
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <select id="end-hour" class="form-control" style="flex:1;" onchange="buildTime('end')">
+                                    <option value="6">6</option>
+                                    <option value="7" selected>7</option>
+                                    <option value="8">8</option>
+                                    <option value="9">9</option>
+                                    <option value="10">10</option>
+                                    <option value="11">11</option>
+                                    <option value="12">12</option>
+                                </select>
+                                <select id="end-min" class="form-control" style="flex:1;" onchange="buildTime('end')">
+                                    <option value="00" selected>00</option>
+                                    <option value="30">30</option>
+                                </select>
+                                <select id="end-ampm" class="form-control" style="flex:1;" onchange="buildTime('end')">
+                                    <option value="AM">AM</option>
+                                    <option value="PM" selected>PM</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -149,20 +185,55 @@
     <script>
         const pricePerHour = <%= court.pricePerHour || 0 %>;
 
+        // Convert 12h picker → 24h string "HH:MM"
+        function to24h(hour, min, ampm) {
+            let h = parseInt(hour);
+            if (ampm === 'AM' && h === 12) h = 0;
+            if (ampm === 'PM' && h !== 12) h += 12;
+            return String(h).padStart(2, '0') + ':' + min;
+        }
+
+        // Called whenever any part of start/end picker changes
+        function buildTime(which) {
+            const h    = document.getElementById(which + '-hour').value;
+            const m    = document.getElementById(which + '-min').value;
+            const ap   = document.getElementById(which + '-ampm').value;
+            const hidden = document.getElementById('booking-' + which + '-time');
+            if (h && m) {
+                hidden.value = to24h(h, m, ap);
+            } else {
+                hidden.value = '';
+            }
+            updateSummary();
+        }
+
+        // Format display label "6:00 AM"
+        function fmtDisplay(h, m, ap) {
+            return h + ':' + m + ' ' + ap;
+        }
+
         function updateSummary() {
-            const date = document.getElementById('booking-date').value;
+            const date      = document.getElementById('booking-date').value;
             const startTime = document.getElementById('booking-start-time').value;
-            const endTime = document.getElementById('booking-end-time').value;
-            const summary = document.getElementById('booking-summary');
+            const endTime   = document.getElementById('booking-end-time').value;
+            const summary   = document.getElementById('booking-summary');
+
+            // Build friendly display strings
+            const sH  = document.getElementById('start-hour').value;
+            const sM  = document.getElementById('start-min').value;
+            const sAP = document.getElementById('start-ampm').value;
+            const eH  = document.getElementById('end-hour').value;
+            const eM  = document.getElementById('end-min').value;
+            const eAP = document.getElementById('end-ampm').value;
 
             if (date && startTime && endTime) {
                 summary.style.display = 'block';
-
                 document.getElementById('summary-date').textContent = date;
-                document.getElementById('summary-time').textContent = startTime + ' - ' + endTime;
+                document.getElementById('summary-time').textContent =
+                    fmtDisplay(sH, sM, sAP) + ' — ' + fmtDisplay(eH, eM, eAP);
 
                 const startMinutes = parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1]);
-                const endMinutes = parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1]);
+                const endMinutes   = parseInt(endTime.split(':')[0])   * 60 + parseInt(endTime.split(':')[1]);
                 const durationMinutes = endMinutes - startMinutes;
 
                 if (durationMinutes >= 60) {
@@ -181,6 +252,12 @@
                 summary.style.display = 'none';
             }
         }
+
+        // Populate hidden inputs on page load so defaults are active immediately
+        window.addEventListener('DOMContentLoaded', function () {
+            buildTime('start');
+            buildTime('end');
+        });
     </script>
 </body>
 </html>
