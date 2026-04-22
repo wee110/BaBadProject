@@ -8,7 +8,7 @@
  * Run with: node migrate.js up
  */
 
-const mysql = require('mysql2/promise');
+
 const bcrypt = require('bcrypt');
 
 const SALT_ROUNDS = 10;

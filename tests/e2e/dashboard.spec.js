@@ -28,7 +28,7 @@ test.describe('Dashboard View', () => {
     expect(isVisible).toBeFalsy();
 
     // Attempt forced access to Add court endpoint
-    const res = await page.goto('/rooms/add');
+    await page.goto('/rooms/add');
     await expect(page.locator('.alert-error')).toBeVisible();
   });
 

@@ -6,7 +6,7 @@
 // Mock mysql2/promise before requiring data.js
 const mockQuery = jest.fn();
 const mockGetConnection = jest.fn();
-const mockRelease = jest.fn();
+
 
 jest.mock('mysql2/promise', () => ({
   createPool: jest.fn(() => ({

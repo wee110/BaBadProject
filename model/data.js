@@ -52,17 +52,19 @@ module.exports = {
       [username]
     );
     const user = rows[0];
-    
+
     if (user && user.password_hash) {
       const match = await bcrypt.compare(password, user.password_hash);
-      if (match) return user;
+      if (match) {
+        return user;
+      }
     }
-    
+
     // Fallback for plain-text (if any left)
     if (user && user.password === password) {
       return user;
     }
-    
+
     return null;
   },
 
