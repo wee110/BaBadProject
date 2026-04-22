@@ -1,7 +1,7 @@
 {
   "name": "babadminton-booking",
   "version": "2.0.0",
-  "description": "\ud83c\udff8 BaBadminton Court Booking System",
+  "description": "🏸 BaBadminton Court Booking System",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

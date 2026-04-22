@@ -41,7 +41,6 @@ test.describe('Dashboard View', () => {
     await expect(page.locator('.page-title')).toContainText('Dashboard');
     const bookingsExists = await page.locator('.glass-card').first().isVisible();
     expect(bookingsExists).toBeTruthy();
-    await page.screenshot({ path: 'screenshots/dashboard_view.png' });
   });
 
 });

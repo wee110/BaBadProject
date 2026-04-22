@@ -300,5 +300,10 @@ module.exports = {
   getRooms: async () => {
     const [rows] = await pool.query('SELECT * FROM courts ORDER BY id');
     return rows.map(mapCourt);
+  },
+
+  ping: async () => {
+    await pool.query('SELECT 1');
+    return true;
   }
 };

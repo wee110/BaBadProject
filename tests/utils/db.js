@@ -12,6 +12,8 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+console.log(`📡 DB Utility using port: ${process.env.DB_PORT || 3306}`);
+
 async function removeTestCourt(courtName) {
   try {
     const conn = await pool.getConnection();
@@ -33,7 +35,7 @@ async function removeTestBooking(userId, date) {
     const conn = await pool.getConnection();
     await conn.query('DELETE FROM bookings WHERE user_id = ? AND booking_date = ?', [userId, date]);
     conn.release();
-  } catch(err) {
+  } catch (err) {
     console.error('Error removing test booking:', err);
   }
 }

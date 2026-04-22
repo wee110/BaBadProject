@@ -1,9 +1,15 @@
 const { test, expect } = require('@playwright/test');
 const { LoginPage } = require('../pages/LoginPage');
 const { BookingPage } = require('../pages/BookingPage');
+const { removeTestBooking } = require('../utils/db');
 
 test.describe('🏆 Phase 4: Golden Path UI Tests', () => {
-
+  
+  test.beforeAll(async () => {
+    // Ensure clean state for the test date to prevent overbooking timeouts
+    // user1 ID in seeded data is 2
+    await removeTestBooking(2, '2026-12-25');
+  });
   test('TC-01: Secure Login & Role Verification', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
@@ -61,13 +67,21 @@ test.describe('🏆 Phase 4: Golden Path UI Tests', () => {
     await loginPage.login('admin', 'admin123');
     await page.waitForURL('**/dashboard');
 
-    // Find the first "Approve" button
-    const approveButton = page.locator('.btn-success').first();
-    if (await approveButton.isVisible()) {
+    // Find a pending booking card
+    const bookingCard = page.locator('.booking-card', { hasText: 'รอการอนุมัติ' }).first();
+    
+    if (await bookingCard.isVisible()) {
+      const bookingId = await bookingCard.getAttribute('id');
+      const approveButton = bookingCard.locator('.btn-success');
+      
       await approveButton.click();
-      // Look for any success alert (Thai or Icon)
-      const successAlert = page.locator('.alert-success');
-      await expect(successAlert.first()).toBeVisible();
+      
+      // Wait for dashboard to reload
+      await page.waitForURL('**/dashboard');
+      
+      // Verify status changes to "อนุมัติแล้ว" (Approved) for THAT specific booking
+      const updatedCard = page.locator(`#${bookingId}`);
+      await expect(updatedCard.locator('.booking-status')).toContainText('อนุมัติแล้ว');
     }
   });
 
@@ -78,14 +92,24 @@ test.describe('🏆 Phase 4: Golden Path UI Tests', () => {
     await loginPage.login('user1', '1234');
     await page.waitForURL('**/dashboard');
 
+    // 1. Create a booking first to create a conflict
     await page.goto('/book/5');
     await page.fill('input[name="date"]', '2026-12-25');
-    await page.selectOption('select[name="startTime"]', '10:00');
-    await page.selectOption('select[name="endTime"]', '11:00');
+    await page.selectOption('select[name="startTime"]', '14:00');
+    await page.selectOption('select[name="endTime"]', '15:00');
+    await page.click('button[type="submit"]');
+    await page.waitForURL('**/dashboard');
+
+    // 2. Try to book the EXACT same slot again
+    await page.goto('/book/5');
+    await page.fill('input[name="date"]', '2026-12-25');
+    await page.selectOption('select[name="startTime"]', '14:00');
+    await page.selectOption('select[name="endTime"]', '15:00');
     await page.click('button[type="submit"]');
 
     // Expected: Error message containing "ถูกจอง" (Booked)
     const errorMsg = page.locator('.alert-error');
+    await expect(errorMsg).toBeVisible();
     await expect(errorMsg).toContainText(/ถูกจอง|จองแล้ว/);
   });
 
