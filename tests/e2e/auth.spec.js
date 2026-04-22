@@ -11,6 +11,7 @@ test.describe('Auth Flow', () => {
 
     await expect(page).toHaveURL('/dashboard');
     await expect(page.locator('.user-name')).toHaveText('admin');
+    await page.screenshot({ path: 'screenshots/login_admin_success.png' });
   });
 
   test('2. Successful Login as User1', async ({ page }) => {
@@ -20,6 +21,7 @@ test.describe('Auth Flow', () => {
 
     await expect(page).toHaveURL('/dashboard');
     await expect(page.locator('.user-name')).toHaveText('user1');
+    await page.screenshot({ path: 'screenshots/login_user_success.png' });
   });
 
   test('3. Failed Login with incorrect username', async ({ page }) => {

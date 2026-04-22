@@ -68,30 +68,41 @@ async function initDatabase() {
     const [userRows] = await conn.query('SELECT COUNT(*) as count FROM users');
     if (userRows[0].count === 0) {
       await conn.query(`
-        INSERT INTO users (username, password, password_hash, role, email) VALUES
-          ('admin', 'admin123', ?, 'admin', 'admin@babadminton.com'),
-          ('user1', '1234', ?, 'user', 'user1@babadminton.com'),
-          ('user2', '1234', ?, 'user', 'user2@babadminton.com')
+        INSERT INTO users (id, username, password, password_hash, role, email) VALUES
+          (1, 'admin', 'admin123', ?, 'admin', 'admin@babadminton.com'),
+          (2, 'user1', '1234', ?, 'user', 'user1@babadminton.com'),
+          (3, 'user2', '1234', ?, 'user', 'user2@babadminton.com')
       `, [
         bcrypt.hashSync('admin123', 10),
         bcrypt.hashSync('1234', 10),
         bcrypt.hashSync('1234', 10)
       ]);
-      console.log('  ✅ Seeded default users');
+      console.log('  ✅ Seeded default users (with Explicit IDs)');
     }
 
-    const [courtRows] = await conn.query('SELECT COUNT(*) as count FROM courts');
-    if (courtRows[0].count === 0) {
+    // Force UTF-8 session
+    await conn.query('SET NAMES utf8mb4');
+
+    const [courtRows] = await pool.query('SELECT id, name FROM courts LIMIT 1');
+    
+    // Force re-seed if table is empty OR if data looks garbled OR if ID shifted from 1
+    const needsReseed = courtRows.length === 0 || courtRows[0].name.includes('à') || courtRows[0].id !== 1;
+    
+    if (needsReseed) {
+      console.log('  ⚠️  Database structure or encoding issue detected. Forcing re-seed...');
+      await conn.query('DELETE FROM bookings'); // Clear bookings to avoid FK issues
+      await conn.query('DELETE FROM courts');
+      
       await conn.query(`
-        INSERT INTO courts (name, court_type, surface, price_per_hour, facilities, description) VALUES
-          ('สนาม A', 'double', 'synthetic', 200, '💡 ไฟส่องสว่าง,❄️ แอร์,🅿️ ที่จอดรถ', 'สนามแบดมินตันคู่ พื้นสังเคราะห์คุณภาพสูง พร้อมระบบแอร์'),
-          ('สนาม B', 'double', 'wooden', 250, '💡 ไฟส่องสว่าง,❄️ แอร์,🚿 ห้องอาบน้ำ,🅿️ ที่จอดรถ', 'สนามพื้นไม้ระดับแข่งขัน เหมาะสำหรับนักกีฬาที่ต้องการคุณภาพสูงสุด'),
-          ('สนาม C', 'single', 'synthetic', 150, '💡 ไฟส่องสว่าง,🅿️ ที่จอดรถ', 'สนามเดี่ยวสำหรับฝึกซ้อม ราคาประหยัด'),
-          ('สนาม D', 'double', 'synthetic', 200, '💡 ไฟส่องสว่าง,❄️ แอร์,🚿 ห้องอาบน้ำ', 'สนามคู่มาตรฐาน พื้นสังเคราะห์กันลื่น'),
-          ('สนาม E (Premium)', 'double', 'wooden', 350, '💡 ไฟส่องสว่าง,❄️ แอร์,🚿 ห้องอาบน้ำ,🅿️ ที่จอดรถ,📺 จอ Scoreboard', 'สนาม Premium พื้นไม้เกรด A พร้อม Scoreboard ดิจิทัล'),
-          ('สนาม F', 'single', 'cement', 100, '💡 ไฟส่องสว่าง', 'สนามเดี่ยวกลางแจ้ง ราคาถูกสุด เหมาะสำหรับเล่นสบายๆ')
+        INSERT INTO courts (id, name, court_type, surface, price_per_hour, facilities, description) VALUES
+          (1, 'สนาม A', 'double', 'synthetic', 200, '💡 ไฟส่องสว่าง,❄️ แอร์,🅿️ ที่จอดรถ', 'สนามแบดมินตันคู่ พื้นสังเคราะห์คุณภาพสูง พร้อมระบบแอร์'),
+          (2, 'สนาม B', 'double', 'wooden', 250, '💡 ไฟส่องสว่าง,❄️ แอร์,🚿 ห้องอาบน้ำ,🅿️ ที่จอดรถ', 'สนามพื้นไม้ระดับแข่งขัน เหมาะสำหรับนักกีฬาที่ต้องการคุณภาพสูงสุด'),
+          (3, 'สนาม C', 'single', 'synthetic', 150, '💡 ไฟส่องสว่าง,🅿️ ที่จอดรถ', 'สนามเดี่ยวสำหรับฝึกซ้อม ราคาประหยัด'),
+          (4, 'สนาม D', 'double', 'synthetic', 200, '💡 ไฟส่องสว่าง,❄️ แอร์,🚿 ห้องอาบน้ำ', 'สนามคู่มาตรฐาน พื้นสังเคราะห์กันลื่น'),
+          (5, 'สนาม E (Premium)', 'double', 'wooden', 350, '💡 ไฟส่องสว่าง,❄️ แอร์,🚿 ห้องอาบน้ำ,🅿️ ที่จอดรถ,📺 จอ Scoreboard', 'สนาม Premium พื้นไม้เกรด A พร้อม Scoreboard ดิจิทัล'),
+          (6, 'สนาม F', 'single', 'cement', 100, '💡 ไฟส่องสว่าง', 'สนามเดี่ยวกลางแจ้ง ราคาถูกสุด เหมาะสำหรับเล่นสบายๆ')
       `);
-      console.log('  ✅ Seeded default courts');
+      console.log('  ✅ Seeded default courts (with Explicit IDs)');
     }
 
     conn.release();
