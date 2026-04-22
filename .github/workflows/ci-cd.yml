@@ -202,6 +202,7 @@ jobs:
         uses: slackapi/slack-github-action@v2
         if: always()
         with:
+          webhook-type: 'incoming-webhook'
           payload: |
             {
               "text": "🚀 *Staging Deployed*\nBranch: `${{ github.ref_name }}`\nCommit: ${{ github.sha }}\nStatus: ${{ job.status }}",
@@ -253,6 +254,7 @@ jobs:
         uses: slackapi/slack-github-action@v2
         if: always()
         with:
+          webhook-type: 'incoming-webhook'
           payload: |
             {
               "text": "✅ *Production Deployed*\nBranch: `${{ github.ref_name }}`\nCommit: ${{ github.sha }}\nStatus: ${{ job.status }}",
