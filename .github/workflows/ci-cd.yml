@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: ["**"]
   pull_request:
     branches: [main]
 
@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: build
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref != 'refs/heads/main'
     environment:
       name: staging
       url: https://staging.babadminton.com
