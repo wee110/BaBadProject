@@ -1,6 +1,5 @@
 const { test, expect } = require('@playwright/test');
 const { LoginPage } = require('../pages/LoginPage');
-const { DashboardPage } = require('../pages/DashboardPage');
 const { BookingPage } = require('../pages/BookingPage');
 
 test.describe('🏆 Phase 4: Golden Path UI Tests', () => {
@@ -8,7 +7,6 @@ test.describe('🏆 Phase 4: Golden Path UI Tests', () => {
   test('TC-01: Secure Login & Role Verification', async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
-    
     // Expected Result: Login succeeds and shows correct username/role
     await loginPage.login('user1', '1234');
     await page.waitForURL('**/dashboard');
@@ -22,17 +20,14 @@ test.describe('🏆 Phase 4: Golden Path UI Tests', () => {
     await loginPage.goto();
     await loginPage.login('user1', '1234');
     await page.waitForURL('**/dashboard');
-    
     await page.goto('/search');
     // Perform search via form (POST)
     await page.fill('#search-date', '2026-12-25');
     await page.selectOption('#search-court-type', 'double');
     await page.click('#btn-search');
-    
     const firstCourtName = page.locator('.court-name').first();
     await expect(firstCourtName).toBeVisible();
     await expect(firstCourtName).toContainText('สนาม'); // Verify Thai characters
-    
     // Verify badge logic
     const badge = page.locator('.badge-type').first();
     await expect(badge).toContainText('คู่'); // Matches Thai UI for DOUBLE

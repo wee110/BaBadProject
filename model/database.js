@@ -84,15 +84,12 @@ async function initDatabase() {
     await conn.query('SET NAMES utf8mb4');
 
     const [courtRows] = await pool.query('SELECT id, name FROM courts LIMIT 1');
-    
     // Force re-seed if table is empty OR if data looks garbled OR if ID shifted from 1
     const needsReseed = courtRows.length === 0 || courtRows[0].name.includes('à') || courtRows[0].id !== 1;
-    
     if (needsReseed) {
       console.log('  ⚠️  Database structure or encoding issue detected. Forcing re-seed...');
       await conn.query('DELETE FROM bookings'); // Clear bookings to avoid FK issues
       await conn.query('DELETE FROM courts');
-      
       await conn.query(`
         INSERT INTO courts (id, name, court_type, surface, price_per_hour, facilities, description) VALUES
           (1, 'สนาม A', 'double', 'synthetic', 200, '💡 ไฟส่องสว่าง,❄️ แอร์,🅿️ ที่จอดรถ', 'สนามแบดมินตันคู่ พื้นสังเคราะห์คุณภาพสูง พร้อมระบบแอร์'),
