@@ -94,7 +94,7 @@ jobs:
           until curl -s http://localhost:3000/health || [ $COUNT -eq $TIMEOUT ]; do
             echo "⏳ Waiting for server... ($COUNT/$TIMEOUT)"
             sleep 1
-            ((COUNT++))
+            COUNT=$((COUNT+1))
           done
           
           if [ $COUNT -eq $TIMEOUT ]; then
