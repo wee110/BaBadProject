@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   MYSQL_VERSION: '8.0'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
