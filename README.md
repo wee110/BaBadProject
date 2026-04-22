@@ -144,3 +144,48 @@ flowchart TD
     style AdminFunc fill:#F0FFF0,stroke:#333,stroke-width:2px ```
 
 
+
+---
+
+## 🚀 CI/CD Pipeline
+
+โปรเจคนี้ใช้ **GitHub Actions** สำหรับ CI/CD pipeline
+
+### Workflows
+- **CI Pipeline** (`.github/workflows/ci.yml`):
+  - รัน unit tests (Jest) ทุกครั้งที่ push หรือ pull request
+  - รัน E2E tests (Playwright) หลังจาก unit tests ผ่าน
+  - Upload coverage reports และ Playwright reports เป็น artifacts
+  - ใช้ MySQL 8.0 เป็น test database
+
+### Commands
+```bash
+# Run tests locally
+npm test              # Unit tests
+npm run test:coverage # Unit tests with coverage
+npm run test:e2e      # E2E tests
+```
+
+---
+
+## 🔍 Profiling & Performance
+
+ดูคู่มือการ profiling ที่ [`PROFILING.md`](./PROFILING.md)
+
+### Quick Start
+```bash
+# Install profiling tools
+npm install
+
+# CPU Profiling
+npm run profile:cpu
+
+# Flame Graph
+npm run profile:flame
+
+# Clinic.js Analysis
+npm run profile:clinic
+```
+
+---
+
