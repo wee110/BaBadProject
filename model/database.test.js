@@ -49,15 +49,20 @@ describe('initDatabase', () => {
         .mockResolvedValueOnce([]) // CREATE bookings
         .mockResolvedValueOnce([[{ count: 0 }]]) // users count = 0
         .mockResolvedValueOnce([]) // INSERT users
-        .mockResolvedValueOnce([[{ count: 0 }]]) // courts count = 0
+        .mockResolvedValueOnce([]) // SET NAMES utf8mb4
+        .mockResolvedValueOnce([]) // DELETE bookings
+        .mockResolvedValueOnce([]) // DELETE courts
         .mockResolvedValueOnce([]), // INSERT courts
       release: mockRelease
     };
     mockGetConnection.mockResolvedValueOnce(mockConn);
+    // pool.query for SELECT id, name FROM courts LIMIT 1 → empty = needs reseed
+    mockQuery.mockResolvedValueOnce([[]]);
 
     const result = await initDatabase();
     expect(result).toBe(true);
-    expect(mockConn.query).toHaveBeenCalledTimes(7);
+    // 3 CREATE + 1 COUNT + 1 INSERT users + 1 SET NAMES + 3 court reseed = 9
+    expect(mockConn.query).toHaveBeenCalledTimes(9);
     expect(mockRelease).toHaveBeenCalled();
   });
 
@@ -68,14 +73,16 @@ describe('initDatabase', () => {
         .mockResolvedValueOnce([]) // CREATE courts
         .mockResolvedValueOnce([]) // CREATE bookings
         .mockResolvedValueOnce([[{ count: 3 }]]) // users count > 0
-        .mockResolvedValueOnce([[{ count: 6 }]]), // courts count > 0
+        .mockResolvedValueOnce([]), // SET NAMES utf8mb4
       release: mockRelease
     };
     mockGetConnection.mockResolvedValueOnce(mockConn);
+    // pool.query for SELECT id, name FROM courts LIMIT 1 → valid data, no reseed
+    mockQuery.mockResolvedValueOnce([[{ id: 1, name: 'สนาม A' }]]);
 
     const result = await initDatabase();
     expect(result).toBe(true);
-    // Should NOT seed data (only 5 calls: 3 CREATE + 2 COUNT)
+    // 3 CREATE + 1 COUNT users + 1 SET NAMES = 5 conn.query calls
     expect(mockConn.query).toHaveBeenCalledTimes(5);
   });
 
@@ -89,14 +96,15 @@ describe('initDatabase', () => {
   test('DB-06: ควร create users table ด้วย schema ที่ถูกต้อง', async () => {
     const mockConn = {
       query: jest.fn()
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([[{ count: 1 }]])
-        .mockResolvedValueOnce([[{ count: 1 }]]),
+        .mockResolvedValueOnce([]) // CREATE users
+        .mockResolvedValueOnce([]) // CREATE courts
+        .mockResolvedValueOnce([]) // CREATE bookings
+        .mockResolvedValueOnce([[{ count: 1 }]]) // users count > 0
+        .mockResolvedValueOnce([]), // SET NAMES utf8mb4
       release: mockRelease
     };
     mockGetConnection.mockResolvedValueOnce(mockConn);
+    mockQuery.mockResolvedValueOnce([[{ id: 1, name: 'สนาม A' }]]);
 
     await initDatabase();
     const firstQuery = mockConn.query.mock.calls[0][0];
@@ -108,14 +116,15 @@ describe('initDatabase', () => {
   test('DB-07: ควร create courts table ด้วย schema ที่ถูกต้อง', async () => {
     const mockConn = {
       query: jest.fn()
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([[{ count: 1 }]])
-        .mockResolvedValueOnce([[{ count: 1 }]]),
+        .mockResolvedValueOnce([]) // CREATE users
+        .mockResolvedValueOnce([]) // CREATE courts
+        .mockResolvedValueOnce([]) // CREATE bookings
+        .mockResolvedValueOnce([[{ count: 1 }]]) // users count > 0
+        .mockResolvedValueOnce([]), // SET NAMES utf8mb4
       release: mockRelease
     };
     mockGetConnection.mockResolvedValueOnce(mockConn);
+    mockQuery.mockResolvedValueOnce([[{ id: 1, name: 'สนาม A' }]]);
 
     await initDatabase();
     const secondQuery = mockConn.query.mock.calls[1][0];
@@ -127,14 +136,15 @@ describe('initDatabase', () => {
   test('DB-08: ควร create bookings table ด้วย schema ที่ถูกต้อง', async () => {
     const mockConn = {
       query: jest.fn()
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([])
-        .mockResolvedValueOnce([[{ count: 1 }]])
-        .mockResolvedValueOnce([[{ count: 1 }]]),
+        .mockResolvedValueOnce([]) // CREATE users
+        .mockResolvedValueOnce([]) // CREATE courts
+        .mockResolvedValueOnce([]) // CREATE bookings
+        .mockResolvedValueOnce([[{ count: 1 }]]) // users count > 0
+        .mockResolvedValueOnce([]), // SET NAMES utf8mb4
       release: mockRelease
     };
     mockGetConnection.mockResolvedValueOnce(mockConn);
+    mockQuery.mockResolvedValueOnce([[{ id: 1, name: 'สนาม A' }]]);
 
     await initDatabase();
     const thirdQuery = mockConn.query.mock.calls[2][0];
