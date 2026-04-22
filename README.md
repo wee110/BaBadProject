@@ -149,7 +149,8 @@ flowchart TD
     style User fill:#87CEEB,stroke:#333,stroke-width:2px
     style Admin fill:#90EE90,stroke:#333,stroke-width:2px
     style UserFunc fill:#FFF8DC,stroke:#333,stroke-width:2px
-    style AdminFunc fill:#F0FFF0,stroke:#333,stroke-width:2px ```
+    style AdminFunc fill:#F0FFF0,stroke:#333,stroke-width:2px
+```
 
 ---
 
