@@ -65,7 +65,7 @@ services:
       # Persistent data
       - mysql-data:/var/lib/mysql
       # Initialize database with schema
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      - ./model/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
     ports:
       - "${DB_PORT:-3306}:3306"
     networks:
