@@ -16,6 +16,19 @@ const SALT_ROUNDS = 10;
 exports.up = async (connection) => {
   console.log('Running migration 001: Add password hash support');
 
+  // Check if users table exists
+  const [tables] = await connection.query(`
+    SELECT TABLE_NAME 
+    FROM INFORMATION_SCHEMA.TABLES 
+    WHERE TABLE_SCHEMA = DATABASE() 
+      AND TABLE_NAME = 'users'
+  `);
+
+  if (tables.length === 0) {
+    console.log('  ⚠️  users table does not exist yet, skipping migration');
+    return;
+  }
+
   // Check if password_hash column exists
   const [columns] = await connection.query(`
     SELECT COLUMN_NAME 
