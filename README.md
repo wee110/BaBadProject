@@ -288,11 +288,11 @@ flowchart TD
 
 | Metric | Phase 2 | Phase 3 | Phase 4 | Target |
 |--------|---------|---------|---------|--------|
-| Lines of Code | 180 | 210 | **~400+** | 250+ |
-| Test Coverage | 50% | 100% | **100% (Golden)** | 85% |
+| Lines of Code (Source) | 180 | 210 | **~1,400+** | 250+ |
+| Total SLOC (inc. Tests) | 250 | 450 | **2,008** | 500+ |
+| Maintainability Index | - | - | **58.56 (Plato)** | >65 |
 | ESLint Errors | 45 | 0 | **0** | 0 |
 | Security Score | 6/10 | 9.5/10 | **9.5/10** | 9/10 |
-| Code Quality | Medium | Medium | **9.0/10** | 9.0 |
 
 ### Dynamic Profiling Comparison
 
@@ -303,6 +303,16 @@ flowchart TD
 | Error Rate | 2% | 0.5% | **<0.5%** | <0.5% |
 | Memory Usage | 120MB | 95MB | **~90MB** | <100MB |
 | Database Queries | 15 | 8 | **~5** | <10 |
+
+### 🛠️ Plato Static Analysis Detail
+ผลลัพธ์จากการรัน `es6-plato` เพื่อวัดคุณภาพโค้ดเชิงลึก:
+- **Average Maintainability:** 58.56 / 100
+- **Total Lines of Code:** 2,008 lines
+- **Average Complexity:** 9.25 (Cyclomatic)
+- **Top Maintainable Files:**
+    - `model/data.js` (70.88)
+    - `app.js` (69.31)
+    - `model/database.test.js` (68.67)
 
 ---
 

@@ -29,12 +29,5 @@
     "curly": ["error", "all"],
     "no-eval": "error",
     "no-implied-eval": "error"
-  },
-  "ignorePatterns": [
-    "node_modules/",
-    "coverage/",
-    "playwright-report/",
-    "test-results/",
-    "ScreenShot/"
-  ]
+  }
 }
