@@ -1,10 +1,27 @@
 ## 📊 Project Status: ✅ COMPLETE (Phase 4 Optimized)
-- **Health Score:** 9.2/10
-- **Security:** Bcrypt Hashing Integrated
-- **CI/CD:** Optimized Parallel Pipeline (GitHub Actions)
-- **E2E Testing:** 100% Pass (Golden Path Test Suite)
+- **Health Score:** 9.2/10 — Production Ready
+- **Security:** Bcrypt Hashing, Secure Cookies, Rate Limiting
+- **CI/CD:** Optimized Parallel Pipeline (~8 min)
+- **E2E Testing:** 100% Pass (Manual/Local Verification)
+- **Coverage:** 100% (Model Layer)
 
 ---
+
+## 📋 Table of Contents
+1. [Project Overview](#-ที่มาและความสำคัญ)
+2. [Quick Start & Installation](#-quick-start--installation)
+3. [Tech Stack](#-tech-stack)
+4. [Features](#-ขอบเขตของ-project)
+5. [Requirement](#-requirement)
+6. [Testing (Unit & E2E)](#-🧪-5-ui-test-cases-golden-path-tests)
+7. [CI/CD Pipeline](#-ci-cd-pipeline-free-tier-parallel-jobs)
+8. [Monitoring](#-monitoring-setup)
+9. [Security](#-security-phase-4-optimization)
+10. [API Endpoints](#-api-endpoints)
+11. [Database Schema](#-database-schema)
+12. [Profiling Results](#-profiling-results-phase-3-vs-previous)
+13. [Lessons Learned](#-lessons-learned)
+14. [Additional Documentation](#-additional-documentation-files)
 ## รายชื่อสมาชิก
 1. นายนรวิชญ์ มากปรางค์ 67102010164
 2. นางสาววริศรา ดิลกกาญจนมาลย์ 67102010173
@@ -79,6 +96,55 @@
 - ระบบต้องสามารถรองรับผู้ใช้งานหลายคนพร้อมกัน
 - ระบบต้องสามารถจัดเก็บข้อมูลการจองย้อนหลังได้
 - ระบบต้องสามารถขยายระบบในอนาคตได้
+
+---
+
+## 🚀 Quick Start & Installation
+
+### Prerequisites
+- Node.js 20.x
+- MySQL 8.0
+- Docker (optional)
+
+### Installation
+```bash
+# 1. Clone the repository
+git clone https://github.com/wee110/BaBadProject.git
+cd BaBadProject
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment
+copy .env.example .env
+# Edit .env with your settings (DB_PASSWORD, SESSION_SECRET)
+
+# 4. Run migrations & Seed
+npm run migrate
+
+# 5. Start server
+npm run dev
+# → http://localhost:3000
+```
+
+### Default Login Credentials
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `admin123` |
+| User | `user1` | `1234` |
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology | Purpose |
+|----------|------------|---------|
+| **Back-end** | Node.js, Express | Core Runtime & Framework |
+| **Front-end** | EJS, Vanilla CSS | Template Engine & Styling |
+| **Database** | MySQL | Relational Database |
+| **Auth** | Passport.js, Bcrypt | Security & Authentication |
+| **Testing** | Jest, Playwright | Unit & E2E Testing |
+| **DevOps** | Docker, GH Actions | Containerization & CI/CD |
 
 
 ## อธิบายกระบวนการทำงาน โดยใช้ Process, Methods and Tools
@@ -243,32 +309,35 @@ flowchart TD
 ## 🚀 CI/CD Pipeline (Free Tier Parallel Jobs)
 
 ### Pipeline Architecture
+
+```mermaid
+graph TD
+    A[Trigger: Push / PR] --> B{Parallel Stage <br/> Limit: 2}
+    
+    subgraph "CI Stage (Parallel)"
+        B --> C["🧪 TEST & LINT <br/> (Jest + ESLint)"]
+        B --> D["🛡️ SECURITY <br/> (Snyk + Audit)"]
+    end
+    
+    C --> E["📦 BUILD <br/> (Docker Image)"]
+    D --> E
+    
+    subgraph "CD Stage"
+        E --> F["🚀 DEPLOY-DEV <br/> (Auto)"]
+        E --> G["🧪 DEPLOY-STAGING <br/> (Manual/Develop)"]
+        E --> H["🏭 DEPLOY-PROD <br/> (Manual/Main)"]
+    end
+    
+    style C fill:#bbf,stroke:#333,stroke-width:2px
+    style D fill:#ffb,stroke:#333,stroke-width:2px
+    style E fill:#fbb,stroke:#333,stroke-width:2px
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    GitHub Actions CI/CD Pipeline                  │
-├─────────────────────────────────────────────────────────────────┤
-│  TRIGGER: push to main/develop or pull_request                   │
-│                            │                                      │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  PARALLEL JOBS (Free Tier: 2 concurrent)                    │ │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │ │
-│  │  │   LINT      │  │ TEST-UNIT   │  │  TEST-E2E  │         │ │
-│  │  │  • ESLint   │  │  • Jest     │  │ • Playwright│         │ │
-│  │  └─────────────┘  └─────────────┘  └─────────────┘         │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-│                            │                                      │
-│                            ▼                                      │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  BUILD + SECURITY SCAN (Sequential)                         │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-│                            │                                      │
-│                            ▼                                      │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │  DEPLOY: Deploy-DEV (auto) | Deploy-STAGING (manual)       │ │
-│  │          Deploy-PRODUCTION (manual)                         │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
+
+### Optimization Strategy
+เพื่อให้ feedback รวดเร็วที่สุดภายใต้ข้อจำกัด **2 Concurrent Jobs** ของ GitHub Free Tier:
+- **TEST/LINT** และ **SECURITY** จะรันพร้อมกันเป็นลำดับแรก (Parallel)
+- **BUILD** จะเริ่มทำงานต่อเมื่อทั้งส่วนของ Test และ Security ผ่านการตรวจสอบทั้งหมด
+- **DEPLOY** จะแยกตามเงื่อนไขของ Branch (Develop สำหรับ Staging / Main สำหรับ Production)
 
 ### Free Tier Limits
 
@@ -287,52 +356,97 @@ flowchart TD
 
 ### CI/CD Features
 
-| Feature | Status | Free Tier |
-|---------|--------|-----------|
-| Parallel Test Execution | ✅ | ✅ (2 concurrent) |
-| Lint + Test + Build | ✅ | ✅ |
-| Docker Build & Push | ✅ | ✅ |
-| Security Scanning | ✅ | ✅ |
-| Coverage Reports | ✅ | ✅ |
-| Deploy Staging | ✅ | ✅ |
-| Deploy Production | ✅ | Manual trigger |
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Parallel CI Jobs | ✅ | Test & Security run concurrently |
+| Lint + Unit Test | ✅ | ESLint + Jest Coverage (100%) |
+| Docker Build | ✅ | Production-ready image |
+| Security Scanning | ✅ | Snyk + npm audit + TruffleHog |
+| Deploy Staging | ✅ | Auto on non-main branches |
+| Deploy Production | ✅ | Manual trigger on main |
 
 ---
 
 ## 🔔 Monitoring Setup
 
-### Health Check Endpoints
+ระบบมี 4 health endpoints พร้อมใช้งานสำหรับการทำ Liveness/Readiness probe:
 
-| Endpoint | Purpose | Frequency |
-|----------|---------|----------|
-| `GET /health` | Overall health | 30s |
-| `GET /ready` | Readiness probe | 10s |
-| `GET /live` | Liveness probe | 5s |
-| `GET /metrics` | Prometheus metrics | 15s |
+| Endpoint | Purpose | Status Code | Frequency |
+|----------|---------|-------------|-----------|
+| `GET /health` | Overall health + DB + memory | 200/503 | 30s |
+| `GET /ready` | Readiness probe (DB initialized) | 200/503 | 10s |
+| `GET /live` | Liveness probe (Process ping) | 200 | 5s |
+| `GET /metrics` | Prometheus metrics format | 200 | 15s |
 
 ### Monitoring Tools
-
-| Tool | Purpose | Free Tier |
-|------|---------|-----------|
-| UptimeRobot | Uptime | ✅ 50 monitors |
-| Sentry | Error tracking | ✅ 5k errors/mo |
-| Prometheus | Metrics | ✅ Self-hosted |
-| Grafana | Dashboards | ✅ Self-hosted |
+- **UptimeRobot:** ติดตามสถานะ uptime 24/7 ผ่าน `/health`
+- **Prometheus:** เก็บ metrics จาก `/metrics` (Self-hosted)
+- **Grafana:** Dashboard แสดงผล performance (Self-hosted)
 
 ---
 
 ## 🔐 Security (Phase 4 Optimization)
 
 ### Bcrypt Integration
-- **Problem:** Plain text passwords in database
-- **Solution:** BCrypt hashing (salt rounds: 10)
-- **Files:** `authController.js`, `database.js` seeding
-- **Impact:** Database compromise no longer reveals user credentials
+- **Problem:** รหัสผ่านเก็บเป็นข้อความดิบ (Plain text) ในฐานข้อมูล
+- **Solution:** ใช้ BCrypt hashing (salt rounds: 10)
+- **Impact:** ข้อมูลรหัสผ่านปลอดภัยแม้ฐานข้อมูลจะหลุดรั่ว
 
-### Database ID Stability
-- **Problem:** Re-seeding caused ID shifts, breaking E2E tests
-- **Solution:** Explicit IDs (users: 1-3, courts: 1-6) in seeding
-- **Impact:** 100% pass rate for E2E tests across environments
+### Security Checklist
+- [x] **Password hashing** — bcrypt (salt rounds: 10)
+- [x] **Secure session cookies** — `httpOnly: true`, `sameSite: 'lax'`
+- [x] **Rate limiting** — 100 requests / 15 min
+- [x] **Security headers** — Helmet middleware
+- [x] **Input validation** — Time validation (`:00` or `:30`), Operating hours (06:00-22:00)
+- [x] **SQL injection prevention** — Parameterized queries
+- [x] **Overbooking prevention** — `hasConflictingBooking()` check
+- [ ] CSRF protection (Upcoming)
+
+---
+
+## 🔗 API Endpoints
+
+### Authentication
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/login` | Authenticate user |
+| GET | `/logout` | Logout user |
+| GET | `/auth/google` | Google OAuth login |
+
+### User Features
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/search` | Search available rooms |
+| POST | `/book/:roomId` | Create booking |
+| GET | `/my-bookings` | View user's bookings |
+| POST | `/cancel-booking/:id` | Cancel booking |
+
+### Admin Features
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/admin/dashboard` | Admin dashboard |
+| POST | `/admin/approve/:id` | Approve booking |
+| POST | `/admin/update-payment/:id` | Update payment status |
+
+---
+
+## 💾 Database Schema
+
+### Bookings Table
+```sql
+CREATE TABLE bookings (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  room_id INT NOT NULL,
+  booking_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  status ENUM('pending', 'approved', 'rejected', 'paid', 'cancelled') DEFAULT 'pending',
+  payment_status ENUM('unpaid', 'paid') DEFAULT 'unpaid',
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (room_id) REFERENCES rooms(id)
+);
+```
 
 ---
 
@@ -342,22 +456,15 @@ flowchart TD
 | Metric | Target | Current |
 |--------|--------|---------|
 | ESLint errors | 0 | ✅ 0 |
-| Test coverage | >85% | ✅ 100% |
+| Test coverage | >85% | ✅ 100% (Model) |
 | Code duplication | <5% | ✅ <5% |
 
-### Security
-| Metric | Target | Current |
-|--------|--------|---------|
-| npm audit | 0 vulnerabilities | ✅ 0 |
-| Password hashing | 100% | ✅ 100% |
-| Security headers | A+ | ✅ A+ |
-
-### Performance
-| Metric | Target | Current |
-|--------|--------|---------|
-| P95 response | <400ms | ✅ 380ms |
-| Error rate | <0.5% | ✅ 0.5% |
-| Uptime | >99.9% | ⚠️ 99.5% |
+### Performance (Phase 4)
+| Metric | Baseline (P3) | Current (P4) | Status |
+|--------|---------------|--------------|--------|
+| Avg Response | 180ms | **~46ms** | ✅ Optimized |
+| Error Rate | 0.5% | **<0.5%** | ✅ Stable |
+| Memory Usage | 95MB | **~90MB** | ✅ Efficient |
 
 ---
 
@@ -369,7 +476,9 @@ flowchart TD
 | `CI-CD-GUIDE.md` | Detailed CI/CD setup & troubleshooting |
 | `PROFILING-REPORT.md` | Comprehensive static + dynamic analysis |
 | `MONITORING-SETUP.md` | Monitoring & alerting configuration |
-| `markdown.md` | Quick reference & API documentation |
+| `CICD-EXPLANATION.md` | Pipeline architecture documentation |
+| `PHASE4-PROFILING.md` | Phase 4 specific performance comparison |
+| `markdown.md` | Consolidated technical reference (Backup) |
 
 ---
 
@@ -383,6 +492,21 @@ flowchart TD
 | Test Coverage | 100% | ✅ Golden |
 | CI/CD Readiness | 10.0/10 | ✅ Optimized |
 | Security | 9.5/10 | ✅ Robust |
+
+---
+
+## 🎓 Lessons Learned
+
+### What Went Well
+- ✅ **MVC Architecture:** แยกส่วนชัดเจนทำให้วิเคราะห์และแก้ไขโค้ดได้ง่าย
+- ✅ **Explicit IDs:** การกำหนด ID ตายตัว (1-6) สำหรับสนามแบดฯ ช่วยให้ E2E Test มีความเสถียร
+- ✅ **Parallel CI/CD:** ลดเวลาใน Pipeline ลงเกือบ 50% โดยเน้น Unit Test และ Security Scan
+- ✅ **Golden UI Tests:** ทดสอบครอบคลุม Business Flow สำคัญ (รันแบบ Local/Manual)
+
+### Areas for Improvement
+- ⚠️ ยังไม่มี CSRF protection สำหรับทุก forms
+- ⚠️ ระบบ session ยังเป็น In-memory (ควรย้ายไป Redis สำหรับ production scale)
+- ⚠️ ยังขาด database indexes ในบางส่วนของ query ที่ซับซ้อน
 
 ---
 
