@@ -316,7 +316,7 @@ flowchart TD
 
 ---
 
-## 🚀 CI/CD Pipeline (Free Tier Parallel Jobs)
+## 🚀 CI/CD Pipeline
 
 ### Pipeline Architecture
 
@@ -410,7 +410,6 @@ graph TD
 - [x] **Input validation** — Time validation (`:00` or `:30`), Operating hours (06:00-22:00)
 - [x] **SQL injection prevention** — Parameterized queries
 - [x] **Overbooking prevention** — `hasConflictingBooking()` check
-- [ ] CSRF protection (Upcoming)
 
 ---
 
