@@ -25,6 +25,12 @@ const { pool, initDatabase } = require('./database');
 
 beforeEach(() => {
   jest.clearAllMocks();
+  jest.spyOn(console, 'log').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 describe('Database Pool', () => {

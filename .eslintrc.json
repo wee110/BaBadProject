@@ -2,18 +2,18 @@
   "env": {
     "node": true,
     "commonjs": true,
-    "es2021": true,
+    "es6": true,
     "jest": true
   },
   "extends": "eslint:recommended",
   "parserOptions": {
-    "ecmaVersion": "latest"
+    "ecmaVersion": 2020
   },
   "rules": {
     "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "no-console": "off",
     "indent": ["error", 2],
-    "linebreak-style": ["error", "unix"],
+    "linebreak-style": "off",
     "quotes": ["error", "single"],
     "semi": ["error", "always"],
     "no-trailing-spaces": "error",
@@ -28,6 +28,7 @@
     "eqeqeq": ["error", "always"],
     "curly": ["error", "all"],
     "no-eval": "error",
-    "no-implied-eval": "error"
+    "no-implied-eval": "error",
+    "require-atomic-updates": "off"
   }
 }
