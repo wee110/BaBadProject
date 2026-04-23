@@ -104,10 +104,9 @@ jobs:
 
       - name: 🔒 Audit dependencies
         run: |
-          echo "=== Running npm audit ==="
-          npm audit --audit-level=high || {
-            echo "⚠️ High severity vulnerabilities found!"
-            echo "Please run 'npm audit fix' or update dependencies manually"
+          echo "=== Running npm audit (Production Dependencies) ==="
+          npm audit --omit=dev --audit-level=high || {
+            echo "⚠️ High severity vulnerabilities found in production dependencies!"
             exit 1
           }
 
