@@ -433,8 +433,31 @@ Tests:       43 passed, 43 total
 **data.js (Data Structure หลัก) ได้ 100% Statement Coverage** — เกินเป้าหมาย 80%
 
 ---
+# Phase 4 — Profiling, CI/CD
 
-## 5 UI Test Cases (Golden Path Tests)
+## Website Screenshots
+- หน้า Login
+<img width="1807" height="947" alt="image" src="https://github.com/user-attachments/assets/1c4ea734-6249-48c5-b448-004f55067039" />
+- หน้า Dashboard
+  <img width="1554" height="959" alt="image" src="https://github.com/user-attachments/assets/73b98909-c973-4a74-ab8d-50548f901603" />
+<img width="1599" height="955" alt="image" src="https://github.com/user-attachments/assets/9a63a9bb-03cf-43f5-b4c4-b61941aea84e" />
+- หน้า Find Court
+<img width="1591" height="928" alt="image" src="https://github.com/user-attachments/assets/ed42e8bb-1e37-4467-90bd-99dca9b0e691" />
+- หน้า calendar
+<img width="1628" height="962" alt="image" src="https://github.com/user-attachments/assets/370d8ec6-55a7-4041-b732-069756489a86" />
+- หน้า Add court
+<img width="1495" height="953" alt="image" src="https://github.com/user-attachments/assets/30bfd736-a605-48b7-b217-aca8e293261d" />
+
+### หน้าเว็บทั้งหมด
+1. Login Page — หน้า Login ด้วย Username/Password
+2. Dashboard — แสดงรายการสนาม 6 สนาม + Booking ทั้งหมด
+3. Booking Page — ฟอร์มจองสนาม (วันที่, เวลาเริ่ม, เวลาสิ้นสุด)
+4. Find Page — ค้นหาสนามว่าง พร้อม filter (ประเภทสนาม, พื้นสนาม)
+5. Calendar Page — ปฏิทินรายเดือน แสดงวันที่มีการจอง
+6. Add Court Page — เพิ่มสนามใหม่ (Admin only)
+---
+
+## 5 UI Test Cases 
 
 ### TC-001: User Login Flow ✅
 | Field | Value |
@@ -486,11 +509,6 @@ Tests:       43 passed, 43 total
 | **Steps** | 1. Login as admin → 2. Select booking → 3. Update payment to "Paid" |
 | **Actual Result** | ✅ PASS - Payment status updated, date recorded |
 
----
-# Phase 4 — Profiling, CI/CD
-
-## Website Screenshots
-
 ## 📊 Profiling Results (Phase 4 Optimized)
 
 ### Static Profiling Comparison
@@ -503,6 +521,18 @@ Tests:       43 passed, 43 total
 | ESLint Errors | 45 | 0 | **0** | 0 |
 | Security Score | 6/10 | 9.5/10 | **9.5/10** | 9/10 |
 
+### Static Profiling (ESLint):
+
+| ไฟล์ | Errors | Warnings | สถานะ |
+|---|:---:|:---:|:---:|
+| `model/data.js` | 0 | 0 | ✅ ผ่าน |
+| `model/database.js` | 0 | 0 | ✅ ผ่าน |
+| `controller/authController.js` | 0 | 0 | ✅ ผ่าน |
+| `controller/bookingController.js` | 0 | 0 | ✅ ผ่าน |
+| `controller/roomController.js` | 0 | 0 | ✅ ผ่าน |
+| `app.js` | 0 | 0 | ✅ ผ่าน |
+| **รวม** | **0** | **0** | **✅ ผ่านทั้งหมด** |
+
 ### Dynamic Profiling Comparison
 
 | Metric | Phase 2 | Phase 3 | Phase 4 | Target |
@@ -512,6 +542,14 @@ Tests:       43 passed, 43 total
 | Error Rate | 2% | 0.5% | **<0.5%** | <0.5% |
 | Memory Usage | 120MB | 95MB | **~90MB** | <100MB |
 | Database Queries | 15 | 8 | **~5** | <10 |
+
+### Dynamic Profiling (Jest Coverage):
+
+| ไฟล์ | Stmts | Branch | Funcs | Lines |
+|---|:---:|:---:|:---:|:---:|
+| `model/data.js` | **100%** | **95.83%** | **100%** | **100%** |
+| `model/database.js` | 14.28% | 71.42% | 0% | 14.28% |
+| Overall | 48.76% | 90.32% | 63.15% | 47.43% |
 
 ### 🛠️ Plato Static Analysis Detail
 ผลลัพธ์จากการรัน `es6-plato` เพื่อวัดคุณภาพโค้ดเชิงลึก:
@@ -525,7 +563,23 @@ Tests:       43 passed, 43 total
 
 ---
 
-## 🚀 CI/CD Pipeline
+### เปรียบเทียบ Profiling กับ Phase 3:
+
+| หัวข้อ | Phase 3 | Phase 4 | เปลี่ยนแปลง |
+|---|---|---|---|
+| Test Suites | 1 ไฟล์ | 2 ไฟล์ | +1 ไฟล์ (database.test1.js) |
+| Test Cases | 35 cases | 43 cases | +8 cases (+23%) |
+| data.js Statements | ~85% | **100%** | ⬆️ +15% |
+| data.js Branches | ~80% | **95.83%** | ⬆️ +16% |
+| data.js Functions | ~85% | **100%** | ⬆️ +15% |
+| data.js Lines | ~85% | **100%** | ⬆️ +15% |
+| database.js test | ❌ ไม่มี | ✅ 8 cases | ใหม่ทั้งหมด |
+| Static Analysis | ❌ ไม่มี | ✅ ESLint 0 errors | ใหม่ทั้งหมด |
+| CI/CD | ❌ ไม่มี | ✅ GitHub Actions | ใหม่ทั้งหมด |
+
+---
+
+## CI/CD Pipeline
 
 ### Pipeline Architecture
 
@@ -586,7 +640,7 @@ graph TD
 
 ---
 
-## 🔔 Monitoring Setup
+## Monitoring Setup
 
 ระบบมี 4 health endpoints พร้อมใช้งานสำหรับการทำ Liveness/Readiness probe:
 
@@ -604,7 +658,7 @@ graph TD
 
 ---
 
-## 🔐 Security (Phase 4 Optimization)
+## Security (Phase 4 Optimization)
 
 ### Bcrypt Integration
 - **Problem:** รหัสผ่านเก็บเป็นข้อความดิบ (Plain text) ในฐานข้อมูล
@@ -700,7 +754,7 @@ CREATE TABLE bookings (
 
 ---
 
-## 🎯 Phase 4 Final Results
+## Phase 4 Final Results
 
 | Category | Score | Status |
 |----------|-------|--------|
@@ -713,23 +767,48 @@ CREATE TABLE bookings (
 
 ---
 
-## 🎓 Lessons Learned
+## Lessons Learned
 
 ### What Went Well
-- ✅ **MVC Architecture:** แยกส่วนชัดเจนทำให้วิเคราะห์และแก้ไขโค้ดได้ง่าย
-- ✅ **Explicit IDs:** การกำหนด ID ตายตัว (1-6) สำหรับสนามแบดฯ ช่วยให้ E2E Test มีความเสถียร
-- ✅ **Parallel CI/CD:** ลดเวลาใน Pipeline ลงเกือบ 50% โดยเน้น Unit Test และ Security Scan
-- ✅ **Golden UI Tests:** ทดสอบครอบคลุม Business Flow สำคัญ (รันแบบ Local/Manual)
+- **MVC Architecture:** แยกส่วนชัดเจนทำให้วิเคราะห์และแก้ไขโค้ดได้ง่าย
+- **Explicit IDs:** การกำหนด ID ตายตัว (1-6) สำหรับสนามแบดฯ ช่วยให้ E2E Test มีความเสถียร
+- **Parallel CI/CD:** ลดเวลาใน Pipeline ลงเกือบ 50% โดยเน้น Unit Test และ Security Scan
+- **Golden UI Tests:** ทดสอบครอบคลุม Business Flow สำคัญ (รันแบบ Local/Manual)
 
 ### Areas for Improvement
-- ⚠️ ยังไม่มี CSRF protection สำหรับทุก forms
-- ⚠️ ระบบ session ยังเป็น In-memory (ควรย้ายไป Redis สำหรับ production scale)
-- ⚠️ ยังขาด database indexes ในบางส่วนของ query ที่ซับซ้อน
+- ยังไม่มี CSRF protection สำหรับทุก forms
+- ระบบ session ยังเป็น In-memory (ควรย้ายไป Redis สำหรับ production scale)
+- ยังขาด database indexes ในบางส่วนของ query ที่ซับซ้อน
 
 ---
 
+## กระบวนการทำงานเพิ่มเติมจาก Phase 1, 2, 3
 
-## 🚀 Quick Start & Installation
+### การบริหาร Project
+- ใช้ **GitHub** เป็นศูนย์กลาง ทั้ง code, issues, และ CI/CD
+- แบ่ง branch ตามชื่อสมาชิก (`warisara`, `toon`, `wee`) แยกทำงานไม่ชนกัน
+- merge เข้า `main` เมื่องานเสร็จและผ่าน review
+
+### การ Monitor Build
+- **GitHub Actions** แสดงผล CI/CD ทุก push/PR ใน tab "Actions"
+- สถานะ ✅ Pass หรือ ❌ Fail เห็นได้ทันทีบน GitHub
+- สามารถดู log แต่ละ step ได้เมื่อต้องการ debug
+
+### การจัดการ Bugs
+- เมื่อพบ bug → สร้าง issue บน GitHub
+- แก้ไขใน branch ของตัวเอง → push → CI test อัตโนมัติ
+- เมื่อ CI ผ่าน → merge เข้า main
+
+### Tools เพิ่มเติมจาก Phase ก่อน:
+| เครื่องมือ | หน้าที่ | เพิ่มใน Phase |
+|---|---|---|
+| Jest | Unit Testing + Coverage | Phase 3 |
+| ESLint | Static Code Analysis | Phase 4 |
+| GitHub Actions | CI/CD Pipeline | Phase 4 |
+
+---
+
+## Quick Start & Installation
 
 ### Prerequisites
 - Node.js 20.x
@@ -762,3 +841,7 @@ npm run dev
 |------|----------|----------|
 | Admin | `admin` | `admin123` |
 | User | `user1` | `1234` |
+
+---
+
+## สิ่งที่ไม่ได้ทำในโปรเจค
