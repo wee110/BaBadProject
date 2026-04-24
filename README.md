@@ -1,3 +1,10 @@
+## รายชื่อสมาชิก
+1. นายนรวิชญ์ มากปรางค์ 67102010164
+2. นางสาววริศรา ดิลกกาญจนมาลย์ 67102010173
+3. นางสาวนิวีฟ้าค แวดือเระ 67102010518
+
+---
+
 ## 📊 Project Status: ✅ COMPLETE (Phase 4 Optimized)
 - **Health Score:** 9.2/10 — Production Ready
 - **Security:** Bcrypt Hashing, Secure Cookies, Rate Limiting
@@ -22,10 +29,6 @@
 12. [Profiling Results](#-profiling-results-phase-3-vs-previous)
 13. [Lessons Learned](#-lessons-learned)
 14. [Additional Documentation](#-additional-documentation-files)
-## รายชื่อสมาชิก
-1. นายนรวิชญ์ มากปรางค์ 67102010164
-2. นางสาววริศรา ดิลกกาญจนมาลย์ 67102010173
-3. นางสาวนิวีฟ้าค แวดือเระ 67102010518
 
 ---
 
@@ -77,7 +80,7 @@
 
 ---
 
-## Requirement
+## Functional & Non-Functional Requirements
 1. Function Requirement
 - ผู้ใช้ต้องสามารถเลือกวันและเวลาที่ต้องการจองสนามแบดมินตันได้
 - ระบบต้องสามารถตรวจสอบสนามที่ว่างตามวันและเวลาที่ผู้ใช้เลือกได้
@@ -99,71 +102,6 @@
 
 ---
 
-## 🚀 Quick Start & Installation
-
-### Prerequisites
-- Node.js 20.x
-- MySQL 8.0
-- Docker (optional)
-
-### Installation
-```bash
-# 1. Clone the repository
-git clone https://github.com/wee110/BaBadProject.git
-cd BaBadProject
-
-# 2. Install dependencies
-npm install
-
-# 3. Configure environment
-copy .env.example .env
-# Edit .env with your settings (DB_PASSWORD, SESSION_SECRET)
-
-# 4. Run migrations & Seed
-npm run migrate
-
-# 5. Start server
-npm run dev
-# → http://localhost:3000
-```
-
-### Default Login Credentials
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | `admin` | `admin123` |
-| User | `user1` | `1234` |
-
----
-
-## 🛠️ Tech Stack
-
-| Category | Technology | Purpose |
-|----------|------------|---------|
-| **Back-end** | Node.js, Express | Core Runtime & Framework |
-| **Front-end** | EJS, Vanilla CSS | Template Engine & Styling |
-| **Database** | MySQL | Relational Database |
-| **Auth** | Passport.js, Bcrypt | Security & Authentication |
-| **Testing** | Jest, Playwright | Unit & E2E Testing |
-| **DevOps** | Docker, GH Actions | Containerization & CI/CD |
-
-
-## อธิบายกระบวนการทำงาน โดยใช้ Process, Methods and Tools
-1. กระบวนการ (Process) : ในการทำโปรเจคครั้งนี้ เราใช้ Agile Development Methodology ที่ผสมแนวคิด Iterative และ Incremental Development โดยแบ่งการพัฒนาเป็น 4 Phase ในแต่ละ Phase จะมี Retrospective เพื่อวิเคราะห์ว่าอะไรดี อะไรต้องปรับปรุง ก่อนเริ่ม Phase ถัดไป ซึ่งช่วยให้ระบบมีความยืดหยุ่นต่อการเปลี่ยนแปลง ลดความเสี่ยงจากข้อผิดพลาด และสามารถทดสอบการทำงานของระบบได้อย่างต่อเนื่อง
-2. Method :
-  - 2.1 ออกแบบระบบโดยใช้ Use Case Diagram เพื่อแสดงการทำงานของระบบและบทบาทของผู้จองสนาม,ผู้ดูแลสนาม
-  - 2.2 ออกแบบข้อมูลและหน้าจอการใช้งานให้เข้าใจง่ายและสอดคล้องกับ Functional Requirements
-  - 2.3 พัฒนาระบบตามลำดับความสำคัญของฟังก์ชัน
-
-3. Tool :
-  - 3.1 GitHub Repository ใช้เป็น Centralized Repository สำหรับจัดเก็บ Source Code, ควบคุม Version, จัดการ Branching และ Merging ของโค้ด
-  - 3.2 การพัฒนาเว็บไซต์ (Front-end): HTML สำหรับการจัดโครงสร้างและตกแต่งหน้าเว็บ, JavaScript สำหรับการสร้างปฏิสัมพันธ์และฟังก์ชันการทำงานบนหน้าเว็บ
-    React สำหรับสร้าง User Interfaces
- -  3.3 การพัฒนาเว็บไซต์ (Back-end): Node.js ไว้ Runtime Environment สำหรับรัน JavaScript ฝั่ง Server
- -  3.4 database: MySQL เป็นระบบฐานข้อมูลเชิงสัมพันธ์ (Relational Databases) ใช้สำหรับจัดเก็บข้อมูลที่มีโครงสร้างอย่างเป็นระบบ
- -  3.5 Figma: ออกแบบ UI/UX
-
----
-
 ## 🎬 Requirement
 https://youtu.be/maLsAKS-xKs?si=WBZ5jlsBjz7GI7Ur
 ## 🎬 Retrospective Phase 1
@@ -181,9 +119,13 @@ https://youtu.be/gvD6zZ5zfNw
 ## 🎬 Retrospective Phase 4
 https://youtu.be/OjTS8-Q3D-U
 
+---
+
 ## Figma
 https://www.figma.com/design/S3js0kbbObbP5JP9O8ck8h/%E0%B8%88%E0%B8%AD%E0%B8%87%E0%B9%81%E0%B8%9A%E0%B8%95%E0%B8%A1%E0%B8%B4%E0%B8%99%E0%B8%95%E0%B8%B1%E0%B8%99?node-id=0-1&p=f&t=gJpiaw3JlJE4zxpD-0
 
+---
+## Use Case Diagram
 
 ```mermaid
 flowchart TD
@@ -229,6 +171,23 @@ flowchart TD
     style UserFunc fill:#FFF8DC,stroke:#333,stroke-width:2px
     style AdminFunc fill:#F0FFF0,stroke:#333,stroke-width:2px
 ```
+
+---
+
+## อธิบายกระบวนการทำงาน โดยใช้ Process, Methods and Tools
+1. กระบวนการ (Process) : ในการทำโปรเจคครั้งนี้ เราใช้ Agile Development Methodology ที่ผสมแนวคิด Iterative และ Incremental Development โดยแบ่งการพัฒนาเป็น 4 Phase ในแต่ละ Phase จะมี Retrospective เพื่อวิเคราะห์ว่าอะไรดี อะไรต้องปรับปรุง ก่อนเริ่ม Phase ถัดไป ซึ่งช่วยให้ระบบมีความยืดหยุ่นต่อการเปลี่ยนแปลง ลดความเสี่ยงจากข้อผิดพลาด และสามารถทดสอบการทำงานของระบบได้อย่างต่อเนื่อง
+2. Method :
+  - 2.1 ออกแบบระบบโดยใช้ Use Case Diagram เพื่อแสดงการทำงานของระบบและบทบาทของผู้จองสนาม,ผู้ดูแลสนาม
+  - 2.2 ออกแบบข้อมูลและหน้าจอการใช้งานให้เข้าใจง่ายและสอดคล้องกับ Functional Requirements
+  - 2.3 พัฒนาระบบตามลำดับความสำคัญของฟังก์ชัน
+
+3. Tool :
+  - 3.1 GitHub Repository ใช้เป็น Centralized Repository สำหรับจัดเก็บ Source Code, ควบคุม Version, จัดการ Branching และ Merging ของโค้ด
+  - 3.2 การพัฒนาเว็บไซต์ (Front-end): HTML สำหรับการจัดโครงสร้างและตกแต่งหน้าเว็บ, JavaScript สำหรับการสร้างปฏิสัมพันธ์และฟังก์ชันการทำงานบนหน้าเว็บ
+    React สำหรับสร้าง User Interfaces
+ -  3.3 การพัฒนาเว็บไซต์ (Back-end): Node.js ไว้ Runtime Environment สำหรับรัน JavaScript ฝั่ง Server
+ -  3.4 database: MySQL เป็นระบบฐานข้อมูลเชิงสัมพันธ์ (Relational Databases) ใช้สำหรับจัดเก็บข้อมูลที่มีโครงสร้างอย่างเป็นระบบ
+ -  3.5 Figma: ออกแบบ UI/UX
 
 ---
 
@@ -521,3 +480,39 @@ CREATE TABLE bookings (
 - ⚠️ ระบบ session ยังเป็น In-memory (ควรย้ายไป Redis สำหรับ production scale)
 - ⚠️ ยังขาด database indexes ในบางส่วนของ query ที่ซับซ้อน
 
+---
+
+
+## 🚀 Quick Start & Installation
+
+### Prerequisites
+- Node.js 20.x
+- MySQL 8.0
+- Docker (optional)
+
+### Installation
+```bash
+# 1. Clone the repository
+git clone https://github.com/wee110/BaBadProject.git
+cd BaBadProject
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment
+copy .env.example .env
+# Edit .env with your settings (DB_PASSWORD, SESSION_SECRET)
+
+# 4. Run migrations & Seed
+npm run migrate
+
+# 5. Start server
+npm run dev
+# → http://localhost:3000
+```
+
+### Default Login Credentials
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | `admin` | `admin123` |
+| User | `user1` | `1234` |
