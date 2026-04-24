@@ -396,16 +396,26 @@ Tests:       43 passed, 43 total
 # Phase 4 — Profiling, CI/CD
 
 ## Website Screenshots
+
 - หน้า Login
+  
 <img width="1807" height="947" alt="image" src="https://github.com/user-attachments/assets/1c4ea734-6249-48c5-b448-004f55067039" />
+
 - หน้า Dashboard
+  
   <img width="1554" height="959" alt="image" src="https://github.com/user-attachments/assets/73b98909-c973-4a74-ab8d-50548f901603" />
 <img width="1599" height="955" alt="image" src="https://github.com/user-attachments/assets/9a63a9bb-03cf-43f5-b4c4-b61941aea84e" />
+
 - หน้า Find Court
+
 <img width="1591" height="928" alt="image" src="https://github.com/user-attachments/assets/ed42e8bb-1e37-4467-90bd-99dca9b0e691" />
+
 - หน้า calendar
+  
 <img width="1628" height="962" alt="image" src="https://github.com/user-attachments/assets/370d8ec6-55a7-4041-b732-069756489a86" />
+
 - หน้า Add court
+  
 <img width="1495" height="953" alt="image" src="https://github.com/user-attachments/assets/30bfd736-a605-48b7-b217-aca8e293261d" />
 
 ### หน้าเว็บทั้งหมด
@@ -520,6 +530,7 @@ Tests:       43 passed, 43 total
     - `model/data.js` (70.88)
     - `app.js` (69.31)
     - `model/database.test.js` (68.67)
+    - 
 
 ---
 
@@ -724,6 +735,17 @@ CREATE TABLE bookings (
 | Test Coverage | 100% | ✅ Golden |
 | CI/CD Readiness | 10.0/10 | ✅ Optimized |
 | Security | 9.5/10 | ✅ Robust |
+
+## Tech Stack
+
+| Category | Technology | Purpose |
+|----------|------------|---------|
+| **Back-end** | Node.js, Express | Core Runtime & Framework |
+| **Front-end** | EJS, Vanilla CSS | Template Engine & Styling |
+| **Database** | MySQL | Relational Database |
+| **Auth** | Passport.js, Bcrypt | Security & Authentication |
+| **Testing** | Jest, Playwright | Unit & E2E Testing |
+| **DevOps** | Docker, GH Actions | Containerization & CI/CD |
 
 ---
 
