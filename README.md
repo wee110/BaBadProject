@@ -227,46 +227,6 @@ graph TD
     Views --> Views_Detail
 ```
 
-### Database Schema:
-
-```mermaid
-erDiagram
-    users {
-        INT id PK
-        VARCHAR username
-        VARCHAR password
-        ENUM role "admin / user"
-        VARCHAR email
-        VARCHAR avatar
-        TIMESTAMP created_at
-    }
-    
-    courts {
-        INT id PK
-        VARCHAR name
-        ENUM court_type "single / double"
-        ENUM surface "synthetic / wooden / cement"
-        INT price_per_hour
-        TEXT facilities
-        TEXT description
-        TIMESTAMP created_at
-    }
-    
-    bookings {
-        INT id PK
-        INT court_id FK
-        DATE booking_date
-        VARCHAR start_time
-        VARCHAR end_time
-        INT user_id FK
-        ENUM status "pending / approved / cancelled"
-        TIMESTAMP created_at
-    }
-    
-    users ||--o{ bookings : "จองสนาม"
-    courts ||--o{ bookings : "ถูกจอง"
-```
-
 ---
 
 ### สิ่งที่เปลี่ยนแปลงไปจาก Phase 1
