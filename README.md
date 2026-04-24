@@ -42,7 +42,7 @@
 
 ## จุดประสงค์ของโปรเจค
 - สร้างระบบที่ช่วยให้ผู้ใช้สามารถจองสนามแบตมินตันได้สะดวก รวดเร็ว โดยลดข้อจำกัดในการจองแบบเดิมที่อาจจะต้องเดินไปจองดวยตนเอง
-- เพิ่มประสิทธิภาพในการจัดการสนามของของผู้ดูแล เพื่อให้สามารถตรวจสอบสถานะสนาม, ข้อมูลผู้จอง, การชำระเงินได้อย่างรวดเร็วและง่าย
+- เพิ่มประสิทธิภาพในการจัดการสนามของผู้ดูแล เพื่อให้สามารถตรวจสอบสถานะสนาม ข้อมูลผู้จอง ได้อย่างรวดเร็วและง่าย
 
 ---
 
@@ -56,7 +56,7 @@
 2. สำหรับผู้ดูแลสนาม
 - สามารถตรวจสอบและจัดการสนามที่จองได้ง่ายขึ้น
 - ระบบช่วยยืนยันและป้องกันการจองสนามซ้ำ
-- ตรวจสอบได้ว่าลูกค้าคนไหนชำระเงินค่าสนามแล้วหรือไม่
+- สามารถอนุมัติ (Approve) หรือปฏิเสธ (Reject) การจองได้
 - ระบบสามารถบันทึกข้อมูลการจองของลูกค้า
 
 ---
@@ -197,9 +197,9 @@ flowchart TD
 
 ```mermaid
 graph TD
-    Client["🌐 Browser / Client"] -->|HTTP Request| App["📦 app.js<br/>Express Server + Passport + Session"]
+    Client["🌐 Browser / Client"] -->|HTTP Request| App["📦 app.js<br/>Express Server + Session"]
     
-    App --> AuthCtrl["🔐 authController<br/>Login / Logout / OAuth / Auth Check"]
+    App --> AuthCtrl["🔐 authController<br/>Login / Logout / Auth Check"]
     App --> RoomCtrl["🏠 roomController<br/>Dashboard / Search / Calendar / Add Court"]
     App --> BookCtrl["📅 bookingController<br/>Book / Approve / Remove / Overbooking Check"]
     
@@ -287,14 +287,12 @@ erDiagram
 
 ### HTTP Methods:
 
-**GET Methods (10 routes):**
+**GET Methods (8 routes):**
 | Route | หน้าที่ |
 |---|---|
 | `GET /` | Redirect ไปหน้า Login |
 | `GET /login` | แสดงหน้า Login |
 | `GET /logout` | ออกจากระบบ |
-| `GET /auth/google` | เริ่ม Google OAuth flow |
-| `GET /auth/google/callback` | รับ callback จาก Google |
 | `GET /dashboard` | แสดงหน้า Dashboard (สนาม + การจอง) |
 | `GET /rooms/add` | แสดงฟอร์มเพิ่มสนาม (Admin) |
 | `GET /search` | แสดงหน้าค้นหาสนาม |
@@ -317,9 +315,126 @@ erDiagram
 - ใช้ `<% if (...) %>` สำหรับ conditional rendering เช่น แสดงปุ่ม Approve เฉพาะ Admin
 - มี 6 template files: login, dashboard, booking, search, calendar, add-room
 
+### การเรียก API:
+- ระบบนี้ไม่ได้เรียก external API ภายนอก
+- Authentication ใช้ระบบ Username/Password ผ่าน express-session เก็บข้อมูล session ฝั่ง server
+- ข้อมูลทั้งหมดจัดเก็บใน MySQL database ของตัวเอง
+
 ---
 
-## 🧪 5 UI Test Cases (Golden Path Tests)
+## Unit Test Cases — Data Structure (data.js)
+**Test Framework:** Jest + jest.mock (mock MySQL)
+
+| TC ID | กลุ่ม | ชื่อ Test Case | Expected Result |
+|---|---|---|---|
+| TC-01 | parseFacilities | parse facilities string เป็น array | `['💡 ไฟ', '❄️ แอร์', '🅿️ ที่จอดรถ']` |
+| TC-02 | parseFacilities | facilities เป็น null | `[]` |
+| TC-03 | parseFacilities | facilities เป็น empty string | `[]` |
+| TC-04 | User Management | findUser — username/password ถูกต้อง | return user object |
+| TC-05 | User Management | findUser — password ผิด | return `null` |
+| TC-06 | User Management | findUserById — มี user | return user object |
+| TC-07 | User Management | findUserById — ไม่มี user | return `null` |
+| TC-08 | User Management | getUsers — ดึง users ทั้งหมด | return array length 2 |
+| TC-09 | User Management | findOrCreateGoogleUser — user มีอยู่แล้ว | return existing user |
+| TC-10 | User Management | findOrCreateGoogleUser — user ใหม่ | return new user with insertId |
+| TC-11 | Court Management | getCourts — mapped object | courtType, pricePerHour ถูกต้อง |
+| TC-12 | Court Management | getCourtById — พบสนาม | return court object |
+| TC-13 | Court Management | getCourtById — ไม่พบ | return `null` |
+| TC-14 | Court Management | addCourt — เพิ่มสำเร็จ | return object with insertId |
+| TC-15 | Court Management | addCourt — default values | courtType='double', pricePerHour=200 |
+| TC-16 | Booking Management | getBookings — mapped object | courtId, date, status ถูกต้อง |
+| TC-17 | Booking Management | getBookingById — พบ | return booking object |
+| TC-18 | Booking Management | getBookingById — ไม่พบ | return `null` |
+| TC-19 | Booking Management | addBooking — สร้างสำเร็จ | status='pending', return insertId |
+| TC-20 | Booking Management | getUserBookings | return bookings ของ userId ที่ระบุ |
+| TC-21 | Overbooking | hasConflictingBooking — มีซ้ำ | return `true` |
+| TC-22 | Overbooking | hasConflictingBooking — ไม่ซ้ำ | return `false` |
+| TC-23 | Overbooking | hasConflictingBooking — exclude id | query มี `id != ?` |
+| TC-24 | Overbooking | isCourtAvailable — ว่าง | return `true` |
+| TC-25 | Overbooking | isCourtAvailable — ไม่ว่าง | return `false` |
+| TC-26 | Overbooking | hasApprovedBooking | return `true` เมื่อมี approved |
+| TC-27 | Booking Actions | approveBooking | status = 'approved' |
+| TC-28 | Booking Actions | removeBooking — พบ | return deleted booking |
+| TC-29 | Booking Actions | removeBooking — ไม่พบ | return `null` |
+| TC-30 | Search | searchAvailableCourts — available | availability = 'available' |
+| TC-31 | Search | searchAvailableCourts — unavailable | availability = 'unavailable' |
+| TC-32 | Search | searchAvailableCourts — pending | availability = 'pending' |
+| TC-33 | Search | filter ตาม courtType | query มี `court_type = ?` |
+| TC-34 | Search | filter ตาม surface | query มี `surface = ?` |
+| TC-35 | getRooms | getRooms alias | ทำงานเหมือน getCourts |
+
+---
+
+## 3.4 Unit Test Cases — Database (database.js)
+
+| TC ID | ชื่อ Test Case | Expected Result |
+|---|---|---|
+| DB-01 | export pool object | pool.query, pool.getConnection defined |
+| DB-02 | export initDatabase function | typeof === 'function' |
+| DB-03 | init สำเร็จ + seed data (tables ว่าง) | return `true`, query 7 ครั้ง |
+| DB-04 | init สำเร็จ + ไม่ seed (มี data แล้ว) | return `true`, query 5 ครั้ง |
+| DB-05 | connection fail | return `false` |
+| DB-06 | users table schema ถูกต้อง | query มี `CREATE TABLE IF NOT EXISTS users` |
+| DB-07 | courts table schema ถูกต้อง | query มี `court_type ENUM`, `price_per_hour` |
+| DB-08 | bookings table schema ถูกต้อง | query มี `court_id`, `booking_date`, `status ENUM` |
+
+---
+## ตัวอย่าง Test Case Code
+
+```javascript
+// ตัวอย่างที่ 1: ทดสอบ findUser — login สำเร็จ
+test('TC-04: ควร return user เมื่อ username/password ถูกต้อง', async () => {
+    const mockUser = { id: 1, username: 'admin', password: 'admin123', role: 'admin' };
+    mockQuery.mockResolvedValueOnce([[mockUser]]);
+
+    const result = await data.findUser('admin', 'admin123');
+    expect(result).toEqual(mockUser);
+    expect(mockQuery).toHaveBeenCalledWith(
+        'SELECT * FROM users WHERE username = ? AND password = ?',
+        ['admin', 'admin123']
+    );
+});
+
+// ตัวอย่างที่ 2: ทดสอบ Overbooking Prevention
+test('TC-21: ควร return true เมื่อมีการจองซ้ำ', async () => {
+    mockQuery.mockResolvedValueOnce([[{ count: 1 }]]);
+
+    const result = await data.hasConflictingBooking(1, '2026-04-01', '10:00', '12:00');
+    expect(result).toBe(true);
+});
+
+// ตัวอย่างที่ 3: ทดสอบ Database Initialization
+test('DB-05: ควร return false เมื่อ database connection ล้มเหลว', async () => {
+    mockGetConnection.mockRejectedValueOnce(new Error('Connection refused'));
+
+    const result = await initDatabase();
+    expect(result).toBe(false);
+});
+```
+
+---
+
+## Test Coverage Report
+
+```
+--------------------|---------|----------|---------|---------|
+File                | % Stmts | % Branch | % Funcs | % Lines |
+--------------------|---------|----------|---------|---------|
+All files           |   48.76 |    90.32 |   63.15 |   47.43 |
+ model/data.js      |     100 |    95.83 |     100 |     100 | ✅
+ model/database.js  |   14.28 |    71.42 |       0 |   14.28 |
+ model/schema.sql   |       0 |      100 |       0 |       0 |
+--------------------|---------|----------|---------|---------|
+
+Test Suites: 2 passed, 2 total
+Tests:       43 passed, 43 total
+```
+
+**data.js (Data Structure หลัก) ได้ 100% Statement Coverage** — เกินเป้าหมาย 80%
+
+---
+
+## 5 UI Test Cases (Golden Path Tests)
 
 ### TC-001: User Login Flow ✅
 | Field | Value |
@@ -372,6 +487,9 @@ erDiagram
 | **Actual Result** | ✅ PASS - Payment status updated, date recorded |
 
 ---
+# Phase 4 — Profiling, CI/CD
+
+## Website Screenshots
 
 ## 📊 Profiling Results (Phase 4 Optimized)
 
