@@ -31,6 +31,7 @@
 14. [Additional Documentation](#-additional-documentation-files)
 
 ---
+# Phase 1 — Requirement
 
 ## ที่มาและความสำคัญ
 ในปัจจุบันคนส่วนใหญ่ให้ความสำคัญกับการออกกำลังกายมากขึ้น เพื่อเสริมสร้างสุขภาพร่างกายให้แข็งแรง และกีฬาแบดมินตันก็เป็นหนึ่งในกีฬาที่ได้รับความนิยมเป็นอย่างมาก เนื่องจากเป็นกีฬาที่เล่นได้ทุกเพศทุกวัย 
@@ -188,6 +189,133 @@ flowchart TD
  -  3.3 การพัฒนาเว็บไซต์ (Back-end): Node.js ไว้ Runtime Environment สำหรับรัน JavaScript ฝั่ง Server
  -  3.4 database: MySQL เป็นระบบฐานข้อมูลเชิงสัมพันธ์ (Relational Databases) ใช้สำหรับจัดเก็บข้อมูลที่มีโครงสร้างอย่างเป็นระบบ
  -  3.5 Figma: ออกแบบ UI/UX
+
+---
+
+# Phase 2 — Development & Design
+## Design Document
+
+```mermaid
+graph TD
+    Client["🌐 Browser / Client"] -->|HTTP Request| App["📦 app.js<br/>Express Server + Passport + Session"]
+    
+    App --> AuthCtrl["🔐 authController<br/>Login / Logout / OAuth / Auth Check"]
+    App --> RoomCtrl["🏠 roomController<br/>Dashboard / Search / Calendar / Add Court"]
+    App --> BookCtrl["📅 bookingController<br/>Book / Approve / Remove / Overbooking Check"]
+    
+    AuthCtrl --> Model["📊 data.js<br/>Data Model Layer"]
+    RoomCtrl --> Model
+    BookCtrl --> Model
+    
+    Model -->|SQL Query| DB["🗄️ MySQL Database<br/>users / courts / bookings"]
+    
+    AuthCtrl --> Views["🎨 EJS Views"]
+    RoomCtrl --> Views
+    BookCtrl --> Views
+    
+    Views --> Client
+    
+    subgraph Views_Detail["View Templates"]
+        V1["login.ejs"]
+        V2["dashboard.ejs"]
+        V3["booking.ejs"]
+        V4["search.ejs"]
+        V5["calendar.ejs"]
+        V6["add-room.ejs"]
+    end
+    
+    Views --> Views_Detail
+```
+
+### Database Schema:
+
+```mermaid
+erDiagram
+    users {
+        INT id PK
+        VARCHAR username
+        VARCHAR password
+        ENUM role "admin / user"
+        VARCHAR email
+        VARCHAR avatar
+        TIMESTAMP created_at
+    }
+    
+    courts {
+        INT id PK
+        VARCHAR name
+        ENUM court_type "single / double"
+        ENUM surface "synthetic / wooden / cement"
+        INT price_per_hour
+        TEXT facilities
+        TEXT description
+        TIMESTAMP created_at
+    }
+    
+    bookings {
+        INT id PK
+        INT court_id FK
+        DATE booking_date
+        VARCHAR start_time
+        VARCHAR end_time
+        INT user_id FK
+        ENUM status "pending / approved / cancelled"
+        TIMESTAMP created_at
+    }
+    
+    users ||--o{ bookings : "จองสนาม"
+    courts ||--o{ bookings : "ถูกจอง"
+```
+
+---
+
+### สิ่งที่เปลี่ยนแปลงไปจาก Phase 1
+| หัวข้อ | Phase 1 | Phase 2 | เหตุผล |
+|---|---|---|---|
+| Database | ยังไม่ได้เลือก | MySQL + mysql2/promise | เหมาะกับข้อมูลแบบ Relational |
+| Overbooking | ไม่ได้กล่าวถึง | ระบบป้องกันจองซ้ำอัตโนมัติ | ป้องกัน conflict ที่จะเกิด |
+| Validation | ไม่ได้ระบุ | เวลา 06-22, ขั้นต่ำ 1 ชม. | ป้องกันข้อมูลผิดพลาด |
+
+ใช้ GitHub Issues และ commit messages ในการ track สถานะงาน
+มี Retrospective ทุกสิ้น Phase 
+
+---
+
+# Phase 3 — Testing
+
+## 3.2 อธิบายการทำงานของ Program
+
+### HTTP Methods:
+
+**GET Methods (10 routes):**
+| Route | หน้าที่ |
+|---|---|
+| `GET /` | Redirect ไปหน้า Login |
+| `GET /login` | แสดงหน้า Login |
+| `GET /logout` | ออกจากระบบ |
+| `GET /auth/google` | เริ่ม Google OAuth flow |
+| `GET /auth/google/callback` | รับ callback จาก Google |
+| `GET /dashboard` | แสดงหน้า Dashboard (สนาม + การจอง) |
+| `GET /rooms/add` | แสดงฟอร์มเพิ่มสนาม (Admin) |
+| `GET /search` | แสดงหน้าค้นหาสนาม |
+| `GET /calendar` | แสดงหน้าปฏิทิน |
+| `GET /book/:roomId` | แสดงหน้าจองสนาม |
+
+**POST Methods (6 routes):**
+| Route | หน้าที่ |
+|---|---|
+| `POST /login` | ตรวจสอบ username/password แล้ว login |
+| `POST /rooms/add` | เพิ่มสนามใหม่ (Admin) |
+| `POST /search` | ค้นหาสนามว่างตามเงื่อนไข |
+| `POST /book/:roomId` | สร้าง booking ใหม่ |
+| `POST /bookings/:id/approve` | อนุมัติ booking (Admin) |
+| `POST /bookings/:id/remove` | ยกเลิก/ลบ booking |
+
+### Template (EJS):
+- ใช้ **EJS** (Embedded JavaScript) เป็น Template Engine
+- EJS ให้เราเขียน HTML ผสม JavaScript ได้ เช่น `<%= user.username %>` จะแสดงชื่อ user
+- ใช้ `<% if (...) %>` สำหรับ conditional rendering เช่น แสดงปุ่ม Approve เฉพาะ Admin
+- มี 6 template files: login, dashboard, booking, search, calendar, add-room
 
 ---
 
