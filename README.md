@@ -503,6 +503,16 @@ Tests:       43 passed, 43 total
 | `app.js` | 0 | 0 | ✅ ผ่าน |
 | **รวม** | **0** | **0** | **✅ ผ่านทั้งหมด** |
 
+### Static Profiling capture phase 4
+<img width="1693" height="837" alt="image" src="https://github.com/user-attachments/assets/286f417f-df02-4805-8313-5da8d475775f" />
+<img width="1579" height="794" alt="image" src="https://github.com/user-attachments/assets/b143d553-5653-45a9-bed3-093eb508abb7" />
+<img width="1588" height="830" alt="image" src="https://github.com/user-attachments/assets/fda08dac-2072-45e0-890b-78b47105533c" />
+<img width="1374" height="856" alt="image" src="https://github.com/user-attachments/assets/b86ec909-c2b5-4b22-991a-8882d7f0948f" />
+
+
+
+
+
 ### Dynamic Profiling Comparison
 
 | Metric | Phase 2 | Phase 3 | Phase 4 | Target |
@@ -544,9 +554,9 @@ Tests:       43 passed, 43 total
 | data.js Branches | ~80% | **95.83%** | ⬆️ +16% |
 | data.js Functions | ~85% | **100%** | ⬆️ +15% |
 | data.js Lines | ~85% | **100%** | ⬆️ +15% |
-| database.js test | ❌ ไม่มี | ✅ 8 cases | ใหม่ทั้งหมด |
-| Static Analysis | ❌ ไม่มี | ✅ ESLint 0 errors | ใหม่ทั้งหมด |
-| CI/CD | ❌ ไม่มี | ✅ GitHub Actions | ใหม่ทั้งหมด |
+| database.js test |  ไม่มี |  8 cases | ใหม่ทั้งหมด |
+| Static Analysis |  ไม่มี |  ESLint 0 errors | ใหม่ทั้งหมด |
+| CI/CD |  ไม่มี |  GitHub Actions | ใหม่ทั้งหมด |
 
 ---
 
@@ -559,17 +569,17 @@ graph TD
     A[Trigger: Push / PR] --> B{Parallel Stage <br/> Limit: 2}
     
     subgraph "CI Stage (Parallel)"
-        B --> C["🧪 TEST & LINT <br/> (Jest + ESLint)"]
-        B --> D["🛡️ SECURITY <br/> (Snyk + Audit)"]
+        B --> C[" TEST & LINT <br/> (Jest + ESLint)"]
+        B --> D[" SECURITY <br/> (Snyk + Audit)"]
     end
     
-    C --> E["📦 BUILD <br/> (Docker Image)"]
+    C --> E[" BUILD <br/> (Docker Image)"]
     D --> E
     
     subgraph "CD Stage"
-        E --> F["🚀 DEPLOY-DEV <br/> (Auto)"]
-        E --> G["🧪 DEPLOY-STAGING <br/> (Manual/Develop)"]
-        E --> H["🏭 DEPLOY-PROD <br/> (Manual/Main)"]
+        E --> F[" DEPLOY-DEV <br/> (Auto)"]
+        E --> G[" DEPLOY-STAGING <br/> (Manual/Develop)"]
+        E --> H[" DEPLOY-PROD <br/> (Manual/Main)"]
     end
     
     style C fill:#bbf,stroke:#333,stroke-width:2px
@@ -698,16 +708,16 @@ CREATE TABLE bookings (
 ### Code Quality
 | Metric | Target | Current |
 |--------|--------|---------|
-| ESLint errors | 0 | ✅ 0 |
-| Test coverage | >85% | ✅ 100% (Model) |
-| Code duplication | <5% | ✅ <5% |
+| ESLint errors | 0 |  0 |
+| Test coverage | >85% |  100% (Model) |
+| Code duplication | <5% |  <5% |
 
 ### Performance (Phase 4)
 | Metric | Baseline (P3) | Current (P4) | Status |
 |--------|---------------|--------------|--------|
-| Avg Response | 180ms | **~46ms** | ✅ Optimized |
-| Error Rate | 0.5% | **<0.5%** | ✅ Stable |
-| Memory Usage | 95MB | **~90MB** | ✅ Efficient |
+| Avg Response | 180ms | **~46ms** |  Optimized |
+| Error Rate | 0.5% | **<0.5%** |  Stable |
+| Memory Usage | 95MB | **~90MB** |  Efficient |
 
 ---
 
@@ -729,12 +739,12 @@ CREATE TABLE bookings (
 
 | Category | Score | Status |
 |----------|-------|--------|
-| **Overall Health** | **9.2/10** | ✅ Production Ready |
-| Static Code Quality | 9.0/10 | ✅ Excellent |
-| Dynamic Performance | 8.5/10 | ✅ Good |
-| Test Coverage | 100% | ✅ Golden |
-| CI/CD Readiness | 10.0/10 | ✅ Optimized |
-| Security | 9.5/10 | ✅ Robust |
+| **Overall Health** | **9.2/10** |  Production Ready |
+| Static Code Quality | 9.0/10 |  Excellent |
+| Dynamic Performance | 8.5/10 |  Good |
+| Test Coverage | 100% |  Golden |
+| CI/CD Readiness | 10.0/10 |  Optimized |
+| Security | 9.5/10 |  Robust |
 
 ## Tech Stack
 
@@ -773,7 +783,7 @@ CREATE TABLE bookings (
 
 ### การ Monitor Build
 - **GitHub Actions** แสดงผล CI/CD ทุก push/PR ใน tab "Actions"
-- สถานะ ✅ Pass หรือ ❌ Fail เห็นได้ทันทีบน GitHub
+- สถานะ  Pass หรือ  Fail เห็นได้ทันทีบน GitHub
 - สามารถดู log แต่ละ step ได้เมื่อต้องการ debug
 
 ### การจัดการ Bugs
