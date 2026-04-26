@@ -339,6 +339,10 @@ graph TD
 | DB-08 | bookings table schema ถูกต้อง | query มี `court_id`, `booking_date`, `status ENUM` |
 
 ---
+## Screen short unit test case
+<img width="653" height="386" alt="unit test" src="https://github.com/user-attachments/assets/feef64c2-7719-41c3-9aa1-5ed013a1d8db" />
+
+
 ## ตัวอย่าง Test Case Code
 
 ```javascript
