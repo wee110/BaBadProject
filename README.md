@@ -668,7 +668,7 @@ graph TD
 |--------|----------|-------------|
 | POST | `/login` | Authenticate user |
 | GET | `/logout` | Logout user |
-| GET | `/auth/google` | Google OAuth login |
+
 
 ### User Features
 | Method | Endpoint | Description |
